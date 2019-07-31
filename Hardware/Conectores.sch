@@ -1,10 +1,10 @@
 EESchema Schematic File Version 4
 LIBS:MIC19-cache
-EELAYER 26 0
+EELAYER 29 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 6 6
+Sheet 5 6
 Title ""
 Date ""
 Rev ""
@@ -425,4 +425,6 @@ Wire Wire Line
 	4425 1975 5675 1975
 Wire Wire Line
 	5675 1575 4425 1575
+Text Notes 6800 2450 0    50   ~ 10
+COLOCAR PULL-UP NOS POTENCIOMETROS PARA PODER USAR COMO CHAVE!!!
 $EndSCHEMATC
