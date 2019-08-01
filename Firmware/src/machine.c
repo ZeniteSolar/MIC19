@@ -145,29 +145,46 @@ inline void task_initializing(void)
 
     VERBOSE_MSG_INIT(usart_send_string("System initialized without errors.\n"));
     set_state_idle();
+} 
+
+
+inline void acumulate_potentiometers(void)
+{
+
+    if(control.motor_PWM_target.samples <= 16843000){     //variable overflow protection (2^32)/255 = 16843009
+    control.motor_PWM_target.sum += adc.channel[MOTOR_PWM_POT].avg;
+    control.motor_PWM_target.samples ++;
+    }
+    else    VERBOSE_MSG_MACHINE(usart_send_string("more than 254 samples"));
+
+    if(control.motor_RAMP_target.samples <= 16843000){     //variable overflow protection (2^32)/255 = 16843009
+    control.motor_RAMP_target.sum += adc.channel[MOTOR_RAMP_POT].avg;
+    control.motor_RAMP_target.samples ++;
+    }
+    else    VERBOSE_MSG_MACHINE(usart_send_string("more than 254 samples"));
+
+    if(control.MCC_POWER_target.samples <= 16843000){     //variable overflow protection (2^32)/255 = 16843009
+    control.MCC_POWER_target.sum += adc.channel[MCC_POWER_POT].avg;
+    control.MCC_POWER_target.samples ++;
+    }
+    else    VERBOSE_MSG_MACHINE(usart_send_string("more than 254 samples"));
 }
 
-inline void read_potenciometers(void)
+inline void average_potentiometers(void)
 {
-    static uint8_t channel_to_update = 0;
+    control.motor_PWM_target.avg = 
+    control.motor_PWM_target.sum / control.motor_PWM_target.samples;
+    control.motor_PWM_target.sum = control.motor_PWM_target.samples = 0;
+
+    control.motor_RAMP_target.avg = 
+    control.motor_RAMP_target.sum / control.motor_RAMP_target.samples;
+    control.motor_RAMP_target.sum = control.motor_RAMP_target.samples = 0;
+
+    control.MCC_POWER_target.avg = 
+    control.MCC_POWER_target.sum / control.MCC_POWER_target.samples;
+    control.MCC_POWER_target.sum = control.MCC_POWER_target.samples = 0;
 
 
-    switch (channel_to_update){
-        case 0:
-        control.motor_PWM_target = adc.channel[channel_to_update].avg;
-        channel_to_update++;
-        break;
-        case 1:
-        control.motor_RAMP_target = adc.channel[channel_to_update].avg;
-        channel_to_update++;
-        break;
-        case 2:
-        control.MCC_POWER_target = adc.channel[channel_to_update].avg;
-        channel_to_update++;
-        break;
-        default:
-        channel_to_update = 0;
-    }   
 }
 
 
@@ -181,35 +198,6 @@ inline void read_switches(void)
     static uint8_t count_DMS_on_state = 0;
     static uint8_t count_DMS_off_state = 0;
 
-// #define     BOAT_ON_SWITCH          PC3
-// #define     MOTOR_ON_SWITCH         PC4
-// #define     MCC_ON_SWITCH           PC5
-            // uint8_t     boat_on                :1;
-            // uint8_t     motor_on               :1;
-            // uint8_t     MCC_on                 :1;
-            // uint8_t     dead_men_switch        :1;
-            // uint8_t     pump1_on               :1;
-            // uint8_t     pump2_on               :1;
-            // uint8_t     pump3_on               :1;
-
-// #define     PUMPS_SWITCHES_PORT     PORTD
-// #define     PUMPS_SWITCHES_PIN      PIND
-// #define     PUMPS_SWITCHES_DDR      DDRD
-// #define     PUMP1_ON_SWITCH         PD2
-// #define     PUMP2_ON_SWITCH         PD3
-// #define     PUMP3_ON_SWITCH         PD4
-
-// #define     DMS_PORT                PORTD
-// #define     DMS_PIN                 PIND
-// #define     DMS_DDR                 DDRD
-// #define     DMS                     PD5
-
-// #define     CTRL_SWITCHES_PORT      PORTC
-// #define     CTRL_SWITCHES_PIN       PINC
-// #define     CTRL_SWITCHES_DDR       DDRC
-// #define     BOAT_ON_SWITCH          PC3
-// #define     MOTOR_ON_SWITCH         PC4
-// #define     MCC_ON_SWITCH           PC5
 
     //TEST DIGITAL PINS AND FILTER THEM
 
@@ -305,6 +293,9 @@ inline void task_idle(void)
 
 read_switches();
 
+acumulate_potentiometers();
+
+
 //set_state_running();
 }
 
@@ -323,7 +314,6 @@ inline void task_running(void)
     }
 #endif // LED_ON
 
-read_potenciometers();
 
 }
 

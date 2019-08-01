@@ -25,6 +25,8 @@
 #define VERBOSE_ON_ERROR
 #define VERBOSE_ON_RELAY
 
+#define CAN_SIGNATURE_SELF              CAN_SIGNATURE_MIC19
+
 
 // MODULES ACTIVATION
 #define USART_ON
@@ -45,18 +47,17 @@
 
 
 #ifdef ADC_ON
+#define ADC_8BITS
 // ADC CONFIGURATION
 // note that changing ADC_FREQUENCY may cause problems with avg_sum_samples
 #define ADC_FREQUENCY                       10000 // 20000
 #define ADC_TIMER_PRESCALER                 8
-#define ADC0_AVG                            adc.channel[ADC0].avg
-#define ADC0_ANGULAR_COEF                   10000 //(40000/((4/5)*1024))
-#define ADC0_LINEAR_COEF                    0
-#define ADC1_AVG                            adc.channel[ADC1].avg
-#define ADC1_ANGULAR_COEF                   10000 //(40000/((4/5)*1024))
-#define ADC1_LINEAR_COEF                    0
 #define ADC_AVG_SIZE_2                      7                  // in base 2
 #define ADC_AVG_SIZE_10                     128                // in base 10
+
+#define POTENTIOMETER_LOW_TRIGGER 15
+#define POTENTIOMETER_HIGH_TRIGGER 240
+
 
 
 //#define FAKE_ADC_ON
@@ -110,6 +111,10 @@
 #define     MOTOR_ON_SWITCH         PC4
 #define     MCC_ON_SWITCH           PC5
 
+#define 	MOTOR_PWM_POT			ADC0
+#define  	MOTOR_RAMP_POT			ADC1
+#define 	MCC_POWER_POT			ADC2
+
 #ifdef LED_ON
 #define     LED_PORT                PORTD
 #define     LED_PIN                 PIND
@@ -137,6 +142,7 @@
 #ifdef CAN_ON
 #define SPI_ON
 #define CAN_APP_SEND_STATE_FREQ     40//36000     //<! state msg frequency in Hz
+#define CAN_APP_SEND_MOTOR_FREQ     0//36000     //<! motor msg frequency in Hz
 #define CAN_APP_SEND_ADC_FREQ       4//6000      //<! adc msg frequency in Hz
 
 // CANBUS DEFINITONS

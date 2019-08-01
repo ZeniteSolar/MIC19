@@ -62,17 +62,26 @@ typedef union error_flags{
     uint8_t   all;
 }error_flags_t;
 
+typedef struct{
+    uint32_t sum;
+    uint16_t avg;
+    uint32_t samples;
+} sub_control_t;
+
 typedef struct control
 {
-    uint16_t motor_PWM_target;
-    uint16_t motor_RAMP_target;
-    uint16_t MCC_POWER_target;
+    sub_control_t motor_PWM_target;
+    sub_control_t motor_RAMP_target;
+    sub_control_t MCC_POWER_target;
 }control_t;
 control_t control;
+
+
 
 // machine checks
 void check_buffers(void);
 void reset_measurements(void);
+void average_measurements(void);
 
 // debug functions
 void print_configurations(void);
@@ -100,7 +109,9 @@ void set_state_waiting_reset(void);
 
 //input functions
 void read_switches(void);
-void read_potenciometers(void);
+void read_potentiometers(void);
+void acumulate_potentiometers(void);
+void average_potentiometers(void);
 
 // machine variables
 volatile state_machine_t state_machine;

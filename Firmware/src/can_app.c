@@ -39,12 +39,20 @@ inline void can_app_task(void)
         can_app_send_state_clk_div = 0;
     }
 
+    if(can_app_send_motor_clk_div++ >= CAN_APP_SEND_MOTOR_CLK_DIV){
+#ifdef USART_ON
+        VERBOSE_MSG_CAN_APP(usart_send_string("motor msg was sent.\n"));
+#endif
+        can_app_send_motor();
+        can_app_send_motor_clk_div = 0;
+    }
+
 }
 
 inline void can_app_send_state(void)
 {
     can_t msg;
-    msg.id                                  = CAN_FILTER_MSG_MCS19_STATE;
+    msg.id                                  = CAN_FILTER_MSG_MIC19_STATE;
     msg.length                              = CAN_LENGTH_MSG_STATE;
     msg.flags.rtr = 0;
 
@@ -57,6 +65,31 @@ inline void can_app_send_state(void)
     VERBOSE_MSG_CAN_APP(usart_send_string("state msg was send.\n"));
 //    VERBOSE_MSG_CAN_APP(can_app_print_msg(&msg));
 #endif
+}
+
+inline void can_app_send_motor(void)
+{
+    can_t msg;
+    msg.id                                  = CAN_FILTER_MSG_MIC19_MOTOR;
+    msg.length                              = CAN_LENGTH_MSG_MIC19_MOTOR;
+    msg.flags.rtr = 0;
+
+    average_potentiometers();
+
+    msg.data[CAN_SIGNATURE_BYTE]                = CAN_SIGNATURE_SELF;
+    msg.data[CAN_MSG_MIC19_MOTOR_D_RAW_BYTE]    = control.motor_PWM_target.avg;
+    msg.data[CAN_MSG_MIC19_MOTOR_I_RAW_BYTE]    = control.motor_RAMP_target.avg;
+
+    usart_send_uint16(control.motor_PWM_target.avg);
+
+    msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_ON_BYTE] |= 
+        ((system_flags.motor_on) << CAN_MSG_MIC19_MOTOR_MOTOR_ON_BIT);
+
+    msg.data[CAN_MSG_MIC19_MOTOR_DMS_BYTE] |= 
+        ((system_flags.dead_men_switch) << CAN_MSG_MIC19_MOTOR_DMS_BIT);
+
+    can_send_message(&msg);
+
 }
 
 
@@ -78,8 +111,8 @@ inline void can_app_send_bat(void)
 
 
     msg.data[CAN_SIGNATURE_BYTE]            = CAN_SIGNATURE_SELF;
-    msg.data[CAN_MSG_MCS19_BAT_AVG_BYTE_L] = LOW(avg_adc0);
-    msg.data[CAN_MSG_MCS19_BAT_AVG_BYTE_H] = HIGH(avg_adc0);
+    msg.data[CAN_MSG_MCS19_BAT_AVG_BYTE_L] =  LOW(avg_adc0);
+    msg.data[CAN_MSG_MCS19_BAT_AVG_BYTE_H] =  HIGH(avg_adc0);
     msg.data[CAN_MSG_MCS19_BAT_MIN_BYTE_L]  = LOW(measurements.adc0_min);
     msg.data[CAN_MSG_MCS19_BAT_MIN_BYTE_H]  = HIGH(measurements.adc0_min);
     msg.data[CAN_MSG_MCS19_BAT_MAX_BYTE_L]  = LOW(measurements.adc0_max);
