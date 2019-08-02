@@ -140,7 +140,18 @@ inline void can_app_send_pumps(void)
 
     msg.data[CAN_SIGNATURE_BYTE]                = CAN_SIGNATURE_SELF;
 
-    msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] = 122;
+    usart_send_string("pump1");
+    usart_send_uint16(system_flags.pump1_on);
+    usart_send_char('\n');
+    
+        msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] = system_flags.pump1_on;
+
+        if (system_flags.pump2_on)
+            msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] = 0xFF;
+        else
+            msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] = 0x00;
+            
+
         // ((system_flags.pump1_on) << CAN_MSG_MIC19_PUMPS_PUMP1_BIT);
 
     // msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |=

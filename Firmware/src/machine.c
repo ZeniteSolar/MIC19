@@ -222,22 +222,20 @@ inline void reset_switches(void)
 inline void read_pump_switches(void)
 {
 
-
-
-    if (!tst_bit(PUMPS_SWITCHES_PIN, PUMP1_ON_SWITCH))
-        system_flags.pump1_on = 1;
-    else
+    if (tst_bit(PUMPS_SWITCHES_PIN, PUMP1_ON_SWITCH))
         system_flags.pump1_on = 0;
-
-    if (!tst_bit(PUMPS_SWITCHES_PIN, PUMP2_ON_SWITCH))
-        system_flags.pump2_on = 1;
     else
+        system_flags.pump1_on = 1;
+
+    if (tst_bit(PUMPS_SWITCHES_PIN, PUMP2_ON_SWITCH))
         system_flags.pump2_on = 0;
-
-    if (!tst_bit(PUMPS_SWITCHES_PIN, PUMP3_ON_SWITCH))
-        system_flags.pump3_on = 1;
     else
+        system_flags.pump2_on = 1;
+
+    if (tst_bit(PUMPS_SWITCHES_PIN, PUMP3_ON_SWITCH))
         system_flags.pump3_on = 0;
+    else
+        system_flags.pump3_on = 1;
 
 }
 
@@ -311,14 +309,14 @@ inline void task_idle(void)
     }        
 #endif
 
-reset_switches();
+    reset_switches();
 
-read_boat_on();
+    read_boat_on();
 
-read_pump_switches();
+    read_pump_switches();
 
-if (system_flags.boat_on)
-    set_state_running();
+    if (system_flags.boat_on)
+        set_state_running();
 
 }
 
@@ -329,13 +327,13 @@ if (system_flags.boat_on)
 inline void task_running(void)
 {
 
-read_boat_on();
+    read_boat_on();
 
-read_switches();
+    read_switches();
 
-read_pump_switches();
+    read_pump_switches();
 
-acumulate_potentiometers();    
+    acumulate_potentiometers();    
 
 #ifdef LED_ON
     if(led_clk_div++ >= 2){
@@ -344,8 +342,8 @@ acumulate_potentiometers();
     }
 #endif // LED_ON
 
-if(!system_flags.boat_on)
-    set_state_idle();
+    if(!system_flags.boat_on)
+        set_state_idle();
 
 
 }
