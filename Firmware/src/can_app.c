@@ -94,7 +94,10 @@ inline void can_app_send_motor(void)
 
     average_potentiometers();
 
-    msg.data[CAN_SIGNATURE_BYTE]                = CAN_SIGNATURE_SELF;
+    msg.data[CAN_SIGNATURE_BYTE]          
+
+
+          = CAN_SIGNATURE_SELF;
     msg.data[CAN_MSG_MIC19_MOTOR_D_RAW_BYTE]    = control.motor_PWM_target.avg;
     msg.data[CAN_MSG_MIC19_MOTOR_I_RAW_BYTE]    = control.motor_RAMP_target.avg;
 
@@ -140,17 +143,30 @@ inline void can_app_send_pumps(void)
 
     msg.data[CAN_SIGNATURE_BYTE]                = CAN_SIGNATURE_SELF;
 
-    usart_send_string("pump1");
+    usart_send_string("pump1: ");
     usart_send_uint16(system_flags.pump1_on);
     usart_send_char('\n');
-    
-        msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] = system_flags.pump1_on;
+    usart_send_string("pump2: ");
+    usart_send_uint16(system_flags.pump2_on);
+    usart_send_char('\n');
+    usart_send_string("pump3: ");
+    usart_send_uint16(system_flags.pump3_on);
+    usart_send_char('\n');
+        
+        
 
-        if (system_flags.pump2_on)
-            msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] = 0xFF;
-        else
-            msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] = 0x00;
-            
+        msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] = 0x00;
+        msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |=
+        (system_flags.pump1_on) << (CAN_MSG_MIC19_PUMPS_PUMP1_BIT);   
+        msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |= 
+        (system_flags.pump2_on) << (CAN_MSG_MIC19_PUMPS_PUMP2_BIT);
+        msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |= 
+        (system_flags.pump3_on) << (CAN_MSG_MIC19_PUMPS_PUMP3_BIT);
+        
+
+        usart_send_string("=========>pumpMSG: ");
+        usart_send_uint16(msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE]);
+        usart_send_char('\n');            
 
         // ((system_flags.pump1_on) << CAN_MSG_MIC19_PUMPS_PUMP1_BIT);
 
