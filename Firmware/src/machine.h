@@ -110,6 +110,9 @@ void set_state_waiting_reset(void);
 //input functions
 void read_switches(void);
 void read_potentiometers(void);
+void read_boat_on(void);
+void read_pump_switches(void);
+void reset_switches(void);
 void acumulate_potentiometers(void);
 void average_potentiometers(void);
 

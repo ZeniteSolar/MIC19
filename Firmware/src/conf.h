@@ -55,6 +55,8 @@
 #define ADC_AVG_SIZE_2                      7                  // in base 2
 #define ADC_AVG_SIZE_10                     128                // in base 10
 
+#define ADC_AVG_VARIABLE_OVERFLOW_PROTECTION 4294967296/255 //32bit variable/8bit variable(maximum value of adc)
+
 #define POTENTIOMETER_LOW_TRIGGER 15
 #define POTENTIOMETER_HIGH_TRIGGER 240
 
@@ -143,7 +145,10 @@
 #define SPI_ON
 #define CAN_APP_SEND_STATE_FREQ     40//36000     //<! state msg frequency in Hz
 #define CAN_APP_SEND_MOTOR_FREQ     0//36000     //<! motor msg frequency in Hz
-#define CAN_APP_SEND_ADC_FREQ       4//6000      //<! adc msg frequency in Hz
+#define CAN_APP_SEND_BOAT_FREQ      0//36000     //<! motor msg frequency in Hz
+#define CAN_APP_SEND_PUMPS_FREQ     4//36000     //<! motor msg frequency in Hz
+
+
 
 // CANBUS DEFINITONS
 // ----------------------------------------------------------------------------

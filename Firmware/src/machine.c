@@ -151,23 +151,23 @@ inline void task_initializing(void)
 inline void acumulate_potentiometers(void)
 {
 
-    if(control.motor_PWM_target.samples <= 16843000){     //variable overflow protection (2^32)/255 = 16843009
+    if(control.motor_PWM_target.samples <= ADC_AVG_VARIABLE_OVERFLOW_PROTECTION){     //variable overflow protection (2^32)/255 = 16843009
     control.motor_PWM_target.sum += adc.channel[MOTOR_PWM_POT].avg;
     control.motor_PWM_target.samples ++;
     }
-    else    VERBOSE_MSG_MACHINE(usart_send_string("more than 254 samples"));
+    else    VERBOSE_MSG_MACHINE(usart_send_string("ADC_AVG_VARIABLE_OVERFLOW_PROTECTION"));
 
-    if(control.motor_RAMP_target.samples <= 16843000){     //variable overflow protection (2^32)/255 = 16843009
+    if(control.motor_RAMP_target.samples <= ADC_AVG_VARIABLE_OVERFLOW_PROTECTION){     //variable overflow protection (2^32)/255 = 16843009
     control.motor_RAMP_target.sum += adc.channel[MOTOR_RAMP_POT].avg;
     control.motor_RAMP_target.samples ++;
     }
-    else    VERBOSE_MSG_MACHINE(usart_send_string("more than 254 samples"));
+    else    VERBOSE_MSG_MACHINE(usart_send_string("ADC_AVG_VARIABLE_OVERFLOW_PROTECTION"));
 
-    if(control.MCC_POWER_target.samples <= 16843000){     //variable overflow protection (2^32)/255 = 16843009
+    if(control.MCC_POWER_target.samples <= ADC_AVG_VARIABLE_OVERFLOW_PROTECTION){     //variable overflow protection (2^32)/255 = 16843009
     control.MCC_POWER_target.sum += adc.channel[MCC_POWER_POT].avg;
     control.MCC_POWER_target.samples ++;
     }
-    else    VERBOSE_MSG_MACHINE(usart_send_string("more than 254 samples"));
+    else    VERBOSE_MSG_MACHINE(usart_send_string("ADC_AVG_VARIABLE_OVERFLOW_PROTECTION"));
 }
 
 inline void average_potentiometers(void)
@@ -187,19 +187,11 @@ inline void average_potentiometers(void)
 
 }
 
-
-inline void read_switches(void)
+inline void read_boat_on(void)
 {
-    static uint8_t clk_div_switch_msg = 0;
+
     static uint8_t count_boat_on_state = 0;
     static uint8_t count_boat_off_state = 0;
-    static uint8_t count_motor_on_state = 0;
-    static uint8_t count_motor_off_state = 0;
-    static uint8_t count_DMS_on_state = 0;
-    static uint8_t count_DMS_off_state = 0;
-
-
-    //TEST DIGITAL PINS AND FILTER THEM
 
     //BOAT SWITCH
     if (!tst_bit(CTRL_SWITCHES_PIN,BOAT_ON_SWITCH)){
@@ -215,6 +207,50 @@ inline void read_switches(void)
         }
     }
     //END OF BOAT SWITCH
+
+
+}
+
+inline void reset_switches(void)
+{
+    system_flags.motor_on = 0;
+    system_flags.dead_men_switch = 0;
+    system_flags.MCC_on = 0;
+}
+
+
+inline void read_pump_switches(void)
+{
+
+
+
+    if (!tst_bit(PUMPS_SWITCHES_PIN, PUMP1_ON_SWITCH))
+        system_flags.pump1_on = 1;
+    else
+        system_flags.pump1_on = 0;
+
+    if (!tst_bit(PUMPS_SWITCHES_PIN, PUMP2_ON_SWITCH))
+        system_flags.pump2_on = 1;
+    else
+        system_flags.pump2_on = 0;
+
+    if (!tst_bit(PUMPS_SWITCHES_PIN, PUMP3_ON_SWITCH))
+        system_flags.pump3_on = 1;
+    else
+        system_flags.pump3_on = 0;
+
+}
+
+inline void read_switches(void)
+{
+    static uint8_t clk_div_switch_msg = 0;
+    static uint8_t count_motor_on_state = 0;
+    static uint8_t count_motor_off_state = 0;
+    static uint8_t count_DMS_on_state = 0;
+    static uint8_t count_DMS_off_state = 0;
+
+
+    //TEST DIGITAL PINS AND FILTER THEM
 
     //MOTOR SWITCH
     if (!tst_bit(CTRL_SWITCHES_PIN,MOTOR_ON_SWITCH)){
@@ -251,22 +287,6 @@ inline void read_switches(void)
     else
         system_flags.MCC_on = 0;
 
-    if (!tst_bit(PUMPS_SWITCHES_PIN, PUMP1_ON_SWITCH))
-        system_flags.pump1_on = 1;
-    else
-        system_flags.pump1_on = 0;
-
-    if (!tst_bit(PUMPS_SWITCHES_PIN, PUMP2_ON_SWITCH))
-        system_flags.pump2_on = 1;
-    else
-        system_flags.pump2_on = 0;
-
-    if (!tst_bit(PUMPS_SWITCHES_PIN, PUMP3_ON_SWITCH))
-        system_flags.pump3_on = 1;
-    else
-        system_flags.pump3_on = 0;
-
-
 
     if (++clk_div_switch_msg >= 10)
     {
@@ -291,12 +311,15 @@ inline void task_idle(void)
     }        
 #endif
 
-read_switches();
+reset_switches();
 
-acumulate_potentiometers();
+read_boat_on();
 
+read_pump_switches();
 
-//set_state_running();
+if (system_flags.boat_on)
+    set_state_running();
+
 }
 
 
@@ -305,7 +328,14 @@ acumulate_potentiometers();
  */
 inline void task_running(void)
 {
-    
+
+read_boat_on();
+
+read_switches();
+
+read_pump_switches();
+
+acumulate_potentiometers();    
 
 #ifdef LED_ON
     if(led_clk_div++ >= 2){
@@ -313,6 +343,9 @@ inline void task_running(void)
         led_clk_div = 0;
     }
 #endif // LED_ON
+
+if(!system_flags.boat_on)
+    set_state_idle();
 
 
 }

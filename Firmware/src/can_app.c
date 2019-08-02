@@ -47,6 +47,24 @@ inline void can_app_task(void)
         can_app_send_motor_clk_div = 0;
     }
 
+
+    if(can_app_send_boat_clk_div++ >= CAN_APP_SEND_BOAT_CLK_DIV){
+#ifdef USART_ON
+        VERBOSE_MSG_CAN_APP(usart_send_string("boat msg was sent.\n"));
+#endif
+        can_app_send_boat();
+        can_app_send_boat_clk_div = 0;
+    }
+
+
+    if(can_app_send_pumps_clk_div++ >= CAN_APP_SEND_BOAT_CLK_DIV){
+#ifdef USART_ON
+        VERBOSE_MSG_CAN_APP(usart_send_string("pumps msg was sent.\n"));
+#endif
+        can_app_send_pumps();
+        can_app_send_pumps_clk_div = 0;
+    }
+
 }
 
 inline void can_app_send_state(void)
@@ -80,9 +98,7 @@ inline void can_app_send_motor(void)
     msg.data[CAN_MSG_MIC19_MOTOR_D_RAW_BYTE]    = control.motor_PWM_target.avg;
     msg.data[CAN_MSG_MIC19_MOTOR_I_RAW_BYTE]    = control.motor_RAMP_target.avg;
 
-    usart_send_uint16(control.motor_PWM_target.avg);
-
-    msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_ON_BYTE] |= 
+    msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_ON_BYTE] = 
         ((system_flags.motor_on) << CAN_MSG_MIC19_MOTOR_MOTOR_ON_BIT);
 
     msg.data[CAN_MSG_MIC19_MOTOR_DMS_BYTE] |= 
@@ -92,6 +108,50 @@ inline void can_app_send_motor(void)
 
 }
 
+inline void can_app_send_boat(void)
+{
+    can_t msg;
+    msg.id                                  = CAN_FILTER_MSG_MIC19_MCS;
+    msg.length                              = CAN_LENGHT_MSG_MIC19_MCS;
+    msg.flags.rtr = 0;
+
+    average_potentiometers();
+
+    msg.data[CAN_SIGNATURE_BYTE]                = CAN_SIGNATURE_SELF;
+    if(system_flags.boat_on){
+        msg.data[CAN_MSG_MIC19_MCS_BOAT_ON_BYTE] = 0xFF; 
+    }else{
+        msg.data[CAN_MSG_MIC19_MCS_BOAT_ON_BYTE] = 0x00;
+    }
+
+
+    can_send_message(&msg);
+
+}
+
+inline void can_app_send_pumps(void)
+{
+
+    can_t msg;
+    msg.id                                  = CAN_FILTER_MSG_MIC19_PUMPS;
+    msg.length                              = CAN_LENGTH_MSG_MIC19_PUMPS;
+    msg.flags.rtr = 0;
+
+
+    msg.data[CAN_SIGNATURE_BYTE]                = CAN_SIGNATURE_SELF;
+
+    msg.data[CAN_LENGTH_MSG_MIC19_PUMPS] = 
+        ((system_flags.pump1_on) << CAN_MSG_MIC19_PUMPS_PUMP1_BIT);
+
+    msg.data[CAN_LENGTH_MSG_MIC19_PUMPS] |= 
+        ((system_flags.pump2_on) << CAN_MSG_MIC19_PUMPS_PUMP2_BIT);
+
+    msg.data[CAN_LENGTH_MSG_MIC19_PUMPS] |= 
+        ((system_flags.pump3_on) << CAN_MSG_MIC19_PUMPS_PUMP3_BIT);
+
+    can_send_message(&msg);
+
+}
 
 
 /* 
