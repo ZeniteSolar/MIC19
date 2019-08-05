@@ -45,6 +45,7 @@ typedef enum state_machine{
 typedef union system_flags{
     struct{
         uint8_t     boat_on                :1;
+        uint8_t     MCS_on                 :1;
         uint8_t     motor_on               :1;
         uint8_t     MCC_on                 :1;
         uint8_t     dead_men_switch        :1;
@@ -115,6 +116,8 @@ void read_pump_switches(void);
 void reset_switches(void);
 void acumulate_potentiometers(void);
 void average_potentiometers(void);
+
+void buzzer(uint8_t buzzer_frequency, uint8_t buzzer_rhythm_on, uint8_t buzzer_rhythm_off);
 
 // machine variables
 volatile state_machine_t state_machine;

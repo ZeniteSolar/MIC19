@@ -33,7 +33,7 @@ inline void can_app_task(void)
 
     if(can_app_send_state_clk_div++ >= CAN_APP_SEND_STATE_CLK_DIV){
 #ifdef USART_ON
-        VERBOSE_MSG_CAN_APP(usart_send_string("state msg was sent.\n"));
+      //  VERBOSE_MSG_CAN_APP(usart_send_string("state msg was sent.\n"));
 #endif
         can_app_send_state();
         can_app_send_state_clk_div = 0;
@@ -41,7 +41,7 @@ inline void can_app_task(void)
 
     if(can_app_send_motor_clk_div++ >= CAN_APP_SEND_MOTOR_CLK_DIV){
 #ifdef USART_ON
-        VERBOSE_MSG_CAN_APP(usart_send_string("motor msg was sent.\n"));
+       // VERBOSE_MSG_CAN_APP(usart_send_string("motor msg was sent.\n"));
 #endif
         can_app_send_motor();
         can_app_send_motor_clk_div = 0;
@@ -50,7 +50,7 @@ inline void can_app_task(void)
 
     if(can_app_send_boat_clk_div++ >= CAN_APP_SEND_BOAT_CLK_DIV){
 #ifdef USART_ON
-        VERBOSE_MSG_CAN_APP(usart_send_string("boat msg was sent.\n"));
+       // VERBOSE_MSG_CAN_APP(usart_send_string("boat msg was sent.\n"));
 #endif
         can_app_send_boat();
         can_app_send_boat_clk_div = 0;
@@ -59,7 +59,7 @@ inline void can_app_task(void)
 
     if(can_app_send_pumps_clk_div++ >= CAN_APP_SEND_BOAT_CLK_DIV){
 #ifdef USART_ON
-        VERBOSE_MSG_CAN_APP(usart_send_string("pumps msg was sent.\n"));
+       // VERBOSE_MSG_CAN_APP(usart_send_string("pumps msg was sent.\n"));
 #endif
         can_app_send_pumps();
         can_app_send_pumps_clk_div = 0;
@@ -80,7 +80,7 @@ inline void can_app_send_state(void)
 
     can_send_message(&msg);
 #ifdef VERBOSE_MSG_CAN_APP
-    VERBOSE_MSG_CAN_APP(usart_send_string("state msg was send.\n"));
+    //ERBOSE_MSG_CAN_APP(usart_send_string("state msg was send.\n"));
 //    VERBOSE_MSG_CAN_APP(can_app_print_msg(&msg));
 #endif
 }
@@ -141,32 +141,22 @@ inline void can_app_send_pumps(void)
     msg.flags.rtr = 0;
 
 
-    msg.data[CAN_SIGNATURE_BYTE]                = CAN_SIGNATURE_SELF;
+    msg.data[CAN_SIGNATURE_BYTE]                = CAN_SIGNATURE_SELF; 
 
-    usart_send_string("pump1: ");
-    usart_send_uint16(system_flags.pump1_on);
-    usart_send_char('\n');
-    usart_send_string("pump2: ");
-    usart_send_uint16(system_flags.pump2_on);
-    usart_send_char('\n');
-    usart_send_string("pump3: ");
-    usart_send_uint16(system_flags.pump3_on);
-    usart_send_char('\n');
-        
-        
+    msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] = 0x00;
 
-        msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] = 0x00;
-        msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |=
-        (system_flags.pump1_on) << (CAN_MSG_MIC19_PUMPS_PUMP1_BIT);   
-        msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |= 
-        (system_flags.pump2_on) << (CAN_MSG_MIC19_PUMPS_PUMP2_BIT);
-        msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |= 
-        (system_flags.pump3_on) << (CAN_MSG_MIC19_PUMPS_PUMP3_BIT);
+    msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |=
+    (system_flags.pump1_on) << (CAN_MSG_MIC19_PUMPS_PUMP1_BIT);
+
+    msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |= 
+    (system_flags.pump2_on) << (CAN_MSG_MIC19_PUMPS_PUMP2_BIT);
+
+    msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |= 
+    (system_flags.pump3_on) << (CAN_MSG_MIC19_PUMPS_PUMP3_BIT);
+
         
 
-        usart_send_string("=========>pumpMSG: ");
-        usart_send_uint16(msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE]);
-        usart_send_char('\n');            
+          
 
         // ((system_flags.pump1_on) << CAN_MSG_MIC19_PUMPS_PUMP1_BIT);
 
@@ -178,6 +168,32 @@ inline void can_app_send_pumps(void)
 
     can_send_message(&msg);
 
+}
+
+inline void can_app_extractor_mcs_relay(can_t *msg)
+{
+    if(msg->data[CAN_SIGNATURE_BYTE] == CAN_SIGNATURE_MCS17){
+        
+        // can_app_checks_without_mic17_msg = 0;
+
+        if(msg->data[CAN_MSG_MCS19_MAIN_RELAY_BYTE] == 0xFF){
+            system_flags.MCS_on = 1;
+        }else if(msg->data[CAN_MSG_MCS19_MAIN_RELAY_BYTE] == 0x00){
+            system_flags.MCS_on = 0;
+        }
+
+
+        //system_flags.boat_on       = bit_is_set(msg->data[
+        //    CAN_MSG_MIC17_MCS_BOAT_ON_BYTE], 
+        //    CAN_MSG_MIC17_MCS_BOAT_ON_BIT);
+
+
+        //VERBOSE_MSG_CAN_APP(usart_send_string("boat on bit: "));
+        //VERBOSE_MSG_CAN_APP(usart_send_uint16(system_flags.boat_on));
+        //VERBOSE_MSG_CAN_APP(usart_send_char('\n'));
+
+
+    }
 }
 
 
@@ -254,16 +270,14 @@ inline void can_app_extractor_mic17_mcs(can_t *msg)
  */
 inline void can_app_msg_extractors_switch(can_t *msg)
 {
-    if(msg->data[CAN_SIGNATURE_BYTE] == CAN_SIGNATURE_MIC17){
-
+    if(msg->data[CAN_SIGNATURE_BYTE] == CAN_SIGNATURE_MCS17){
 
         switch(msg->id){
-            /*EXAMPLE
-            case CAN_FILTER_MSG_MIC17_MCS:
-                VERBOSE_MSG_CAN_APP(usart_send_string("got a boat_on msg: "));
+            
+            case CAN_FILTER_MSG_MCS19_RELAY:
+                VERBOSE_MSG_CAN_APP(usart_send_string("got a mcs msg: "));
                 VERBOSE_MSG_CAN_APP(can_app_print_msg(msg));
-                can_app_extractor_mic17_mcs(msg);
-            */
+                can_app_extractor_mcs_relay(msg);
             default:
 #ifdef USART_ON
                 VERBOSE_MSG_CAN_APP(usart_send_string("got a unknown msg:\n "));

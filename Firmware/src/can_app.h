@@ -24,6 +24,7 @@ void can_app_send_state(void);
 void can_app_send_motor(void);
 void can_app_send_boat(void);
 void can_app_send_pumps(void);
+void can_app_extractor_mcs_relay(can_t *msg);
 void can_app_msg_extractors_switch(can_t *msg);
 //void can_app_extractor_mic17_state(can_t *msg);
 //void can_app_extractor_mic17_mcs(can_t *msg);

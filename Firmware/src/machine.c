@@ -141,11 +141,115 @@ inline void task_initializing(void)
     set_led(LED1);
 #endif
 
+
     set_machine_initial_state();
 
     VERBOSE_MSG_INIT(usart_send_string("System initialized without errors.\n"));
     set_state_idle();
 } 
+
+
+
+/**
+ * @brief waits for commands while checking the system
+ */
+inline void task_idle(void)
+{
+#ifdef LED_ON
+    if(led_clk_div++ >= 30){
+        cpl_led(LED1);
+        led_clk_div = 0;
+    }        
+#endif
+#ifdef BUZZER_ON
+    buzzer(2,2,128);
+
+#endif
+
+    reset_switches();
+
+    read_boat_on();
+
+    read_pump_switches();
+
+
+#ifdef CHECK_MCS_ON
+    if(system_flags.MCS_on && system_flags.boat_on)
+        set_state_running();
+#else    
+    if(system_flags.boat_on)
+        set_state_running();
+#endif
+
+}
+
+
+/**
+ * @brief running task checks the system and apply the control action to pwm.
+ */
+inline void task_running(void)
+{
+
+    read_boat_on();
+
+    read_switches();
+
+    read_pump_switches();
+
+    acumulate_potentiometers();    
+
+#ifdef LED_ON
+    if(led_clk_div++ >= 2){
+        cpl_led(LED1);
+        led_clk_div = 0;
+    }
+#endif // LED_ON
+#ifdef BUZZER_ON
+    buzzer(2,2,64);
+#endif
+
+    if(!system_flags.boat_on)
+        set_state_idle();
+
+
+}
+
+
+inline void buzzer(uint8_t buzzer_frequency, uint8_t buzzer_rhythm_on, uint8_t buzzer_rhythm_off)
+{
+    static uint8_t buzzer_frequency_clk_div = 0;
+    static uint8_t buzzer_rhythm_clk_div = 0;
+
+
+/*
+
+    |---|   |---|           |---|   |---|
+    |   |   |   |           |   |   |   |
+    |   |   |   |           |   |   |   |
+----|   |---|   |-----------|   |---|   |-----
+
+^^           ^   ^          ^
+||-----------|   |          |
+|buzzer_frequency|          |
+|                |          |
+|----------------|----------|
+ buzzer_rhythm_on|buzzer_rhythm_off
+*/
+
+    if(++buzzer_rhythm_clk_div <= buzzer_rhythm_on){
+        if(++buzzer_frequency_clk_div >= buzzer_frequency){
+        buzzer_frequency_clk_div = 0;
+        cpl_buzzer();
+        }        
+    }else{
+        clr_buzzer();
+        if(buzzer_rhythm_clk_div >= buzzer_rhythm_off + buzzer_rhythm_on)
+            buzzer_rhythm_clk_div = 0;
+    }
+
+
+}
+
 
 
 inline void acumulate_potentiometers(void)
@@ -266,7 +370,7 @@ inline void read_switches(void)
     //END OF MOTOR SWITCH
 
     //DEAD MEN SWITCH
-    if (!tst_bit(DMS_PIN,DMS)){
+    if (tst_bit(DMS_PIN,DMS)){
         if (++count_DMS_on_state >= DEAD_MEN_TO_UPDATE){
             count_DMS_off_state = 0;
             system_flags.dead_men_switch = 1;
@@ -297,56 +401,6 @@ inline void read_switches(void)
 
 }
 
-/**
- * @brief waits for commands while checking the system
- */
-inline void task_idle(void)
-{
-#ifdef LED_ON
-    if(led_clk_div++ >= 30){
-        cpl_led(LED1);
-        led_clk_div = 0;
-    }        
-#endif
-
-    reset_switches();
-
-    read_boat_on();
-
-    read_pump_switches();
-
-    if (system_flags.boat_on)
-        set_state_running();
-
-}
-
-
-/**
- * @brief running task checks the system and apply the control action to pwm.
- */
-inline void task_running(void)
-{
-
-    read_boat_on();
-
-    read_switches();
-
-    read_pump_switches();
-
-    acumulate_potentiometers();    
-
-#ifdef LED_ON
-    if(led_clk_div++ >= 2){
-        cpl_led(LED1);
-        led_clk_div = 0;
-    }
-#endif // LED_ON
-
-    if(!system_flags.boat_on)
-        set_state_idle();
-
-
-}
 
 
 /**
@@ -359,6 +413,9 @@ inline void task_error(void)
         set_led(LED1);
         led_clk_div = 0;
     }
+#endif
+#ifdef BUZZER_ON
+    buzzer(4,8,0);
 #endif
     set_state_initializing();
 
@@ -405,7 +462,13 @@ inline void task_reset(void)
     cli();  // disable interrupts
 
     VERBOSE_MSG_ERROR(usart_send_string("WAITING FOR A RESET!\n"));
-    for(;;);
+    for(;;)
+    {
+#ifdef BUZZER_ON
+    buzzer(2,64,250);
+    _delay_ms(1);
+#endif
+    }    ;
 }
 
 void print_infos(void)
