@@ -430,24 +430,13 @@ $EndComp
 $Comp
 L Device:Buzzer BZ1
 U 1 1 5CCB1F93
-P 4600 6850
-F 0 "BZ1" H 4606 6525 50  0000 C CNN
-F 1 "Buzzer" H 4606 6616 50  0000 C CNN
-F 2 "Buzzer_Beeper:Buzzer_12x9.5RM7.6" V 4575 6950 50  0001 C CNN
-F 3 "~" V 4575 6950 50  0001 C CNN
-	1    4600 6850
+P 4600 6800
+F 0 "BZ1" H 4606 6475 50  0000 C CNN
+F 1 "Buzzer" H 4606 6566 50  0000 C CNN
+F 2 "Buzzer_Beeper:Buzzer_12x9.5RM7.6" V 4575 6900 50  0001 C CNN
+F 3 "~" V 4575 6900 50  0001 C CNN
+	1    4600 6800
 	-1   0    0    1   
-$EndComp
-$Comp
-L Device:D D402
-U 1 1 5CCB20DF
-P 5050 6800
-F 0 "D402" V 5004 6879 50  0000 L CNN
-F 1 "BYD77" V 5095 6879 50  0000 L CNN
-F 2 "Diode_SMD:D_MiniMELF_Handsoldering" H 5050 6800 50  0001 C CNN
-F 3 "~" H 5050 6800 50  0001 C CNN
-	1    5050 6800
-	0    1    1    0   
 $EndComp
 Wire Wire Line
 	4350 5350 4350 5450
@@ -637,24 +626,11 @@ Connection ~ 5175 6300
 Wire Wire Line
 	5175 6300 5175 6325
 Wire Wire Line
-	4700 6950 5050 6950
-Wire Wire Line
-	4700 6750 4950 6750
-Wire Wire Line
-	4950 6750 4950 6650
-Wire Wire Line
 	4950 6475 5025 6475
-Connection ~ 5050 6950
-Wire Wire Line
-	5050 6650 4950 6650
-Connection ~ 4950 6650
 Wire Wire Line
 	4950 6650 4950 6475
 Wire Wire Line
 	5175 6625 5175 6950
-Wire Wire Line
-	5050 6950 5175 6950
-Connection ~ 5175 6950
 Wire Wire Line
 	5175 6950 5550 6950
 Text Label 5050 4850 0    60   ~ 0
@@ -668,4 +644,47 @@ Wire Wire Line
 	5050 5150 4950 5150
 Wire Wire Line
 	4350 1850 4350 2350
+$Comp
+L Connector:Conn_01x02_Male J402
+U 1 1 5D49F57B
+P 4850 7200
+F 0 "J402" V 5004 7012 50  0000 R CNN
+F 1 "BUZZER ON/OFF" V 4913 7012 50  0000 R CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 4850 7200 50  0001 C CNN
+F 3 "~" H 4850 7200 50  0001 C CNN
+	1    4850 7200
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	4800 6950 4700 6950
+Wire Wire Line
+	4700 6950 4700 6900
+Wire Wire Line
+	4700 6700 4700 6650
+Wire Wire Line
+	4700 6650 4800 6650
+Wire Wire Line
+	4950 6650 4800 6650
+Connection ~ 4800 6650
+$Comp
+L Device:D D402
+U 1 1 5CCB20DF
+P 4800 6800
+F 0 "D402" V 4754 6879 50  0000 L CNN
+F 1 "BYD77" V 4845 6879 50  0000 L CNN
+F 2 "Diode_SMD:D_MiniMELF_Handsoldering" H 4800 6800 50  0001 C CNN
+F 3 "~" H 4800 6800 50  0001 C CNN
+	1    4800 6800
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	4800 6950 4850 6950
+Wire Wire Line
+	4850 6950 4850 7000
+Connection ~ 4800 6950
+Wire Wire Line
+	4950 7000 4950 6950
+Wire Wire Line
+	4950 6950 5175 6950
+Connection ~ 5175 6950
 $EndSCHEMATC
