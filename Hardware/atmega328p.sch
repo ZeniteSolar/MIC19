@@ -1,6 +1,6 @@
 EESchema Schematic File Version 4
 LIBS:MIC19-cache
-EELAYER 29 0
+EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
@@ -644,17 +644,6 @@ Wire Wire Line
 	5050 5150 4950 5150
 Wire Wire Line
 	4350 1850 4350 2350
-$Comp
-L Connector:Conn_01x02_Male J402
-U 1 1 5D49F57B
-P 4850 7200
-F 0 "J402" V 5004 7012 50  0000 R CNN
-F 1 "BUZZER ON/OFF" V 4913 7012 50  0000 R CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 4850 7200 50  0001 C CNN
-F 3 "~" H 4850 7200 50  0001 C CNN
-	1    4850 7200
-	0    -1   -1   0   
-$EndComp
 Wire Wire Line
 	4800 6950 4700 6950
 Wire Wire Line
@@ -677,14 +666,8 @@ F 3 "~" H 4800 6800 50  0001 C CNN
 	1    4800 6800
 	0    1    1    0   
 $EndComp
-Wire Wire Line
-	4800 6950 4850 6950
-Wire Wire Line
-	4850 6950 4850 7000
 Connection ~ 4800 6950
-Wire Wire Line
-	4950 7000 4950 6950
-Wire Wire Line
-	4950 6950 5175 6950
 Connection ~ 5175 6950
+Wire Wire Line
+	4800 6950 5175 6950
 $EndSCHEMATC
