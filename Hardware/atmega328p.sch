@@ -1,6 +1,6 @@
 EESchema Schematic File Version 4
 LIBS:MIC19-cache
-EELAYER 26 0
+EELAYER 29 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
@@ -427,17 +427,6 @@ F 3 "~" H 5850 6850 50  0001 C CNN
 	1    5850 6850
 	0    -1   1    0   
 $EndComp
-$Comp
-L Device:Buzzer BZ1
-U 1 1 5CCB1F93
-P 4600 6800
-F 0 "BZ1" H 4606 6475 50  0000 C CNN
-F 1 "Buzzer" H 4606 6566 50  0000 C CNN
-F 2 "Buzzer_Beeper:Buzzer_12x9.5RM7.6" V 4575 6900 50  0001 C CNN
-F 3 "~" V 4575 6900 50  0001 C CNN
-	1    4600 6800
-	-1   0    0    1   
-$EndComp
 Wire Wire Line
 	4350 5350 4350 5450
 $Comp
@@ -614,7 +603,7 @@ F 1 "1K" H 5106 6520 50  0000 R CNN
 F 2 "Potentiometer_THT:Potentiometer_Bourns_3296W_Vertical" H 5175 6475 50  0001 C CNN
 F 3 "~" H 5175 6475 50  0001 C CNN
 	1    5175 6475
-	-1   0    0    1   
+	-1   0    0    -1  
 $EndComp
 Wire Wire Line
 	5175 6250 5175 6300
@@ -670,4 +659,15 @@ Connection ~ 4800 6950
 Connection ~ 5175 6950
 Wire Wire Line
 	4800 6950 5175 6950
+$Comp
+L Device:Buzzer BZ1
+U 1 1 5CCB1F93
+P 4600 6800
+F 0 "BZ1" H 4606 6475 50  0000 C CNN
+F 1 "Buzzer" H 4606 6566 50  0000 C CNN
+F 2 "Buzzer_Beeper:Buzzer_12x9.5RM7.6" V 4575 6900 50  0001 C CNN
+F 3 "~" V 4575 6900 50  0001 C CNN
+	1    4600 6800
+	-1   0    0    -1  
+$EndComp
 $EndSCHEMATC
