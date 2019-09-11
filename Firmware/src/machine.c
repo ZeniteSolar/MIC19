@@ -293,24 +293,28 @@ inline void average_potentiometers(void)
 
 inline void read_boat_on(void)
 {
-
-    static uint8_t count_boat_on_state = 0;
-    static uint8_t count_boat_off_state = 0;
+    enum{ON,OFF};
+    static uint8_t count_boat_state[2] = {0,0};
 
     //BOAT SWITCH
     if (!tst_bit(CTRL_SWITCHES_PIN,BOAT_ON_SWITCH)){
-        if (++count_boat_on_state >= BOAT_ON_TO_UPDATE){
-            count_boat_off_state = 0;
-            system_flags.boat_on = 1;
+        if (++count_boat_state[ON] >= BOAT_ON_TO_UPDATE){
+            count_boat_state[OFF] = 0;
+            system_flags.boat_switch_on = 1;
         }
     }
     else{
-        if (++count_boat_off_state >= BOAT_ON_TO_UPDATE){
-            count_boat_on_state = 0;
-            system_flags.boat_on = 0;
+        if (++count_boat_state[OFF] >= BOAT_ON_TO_UPDATE){
+            count_boat_state[ON] = 0;
+            system_flags.boat_switch_on = 0;
         }
     }
     //END OF BOAT SWITCH
+
+    if(system_flags.boat_switch_on && system_flags.emergency)
+        system_flags.boat_on = 1;
+    else
+        system_flags.boat_on = 0;
 
 
 }
@@ -320,6 +324,7 @@ inline void reset_switches(void)
     system_flags.motor_on = 0;
     system_flags.dead_men_switch = 0;
     system_flags.MCC_on = 0;
+    system_flags.emergency = 0;
 }
 
 
@@ -327,58 +332,76 @@ inline void read_pump_switches(void)
 {
 
     if (tst_bit(PUMPS_SWITCHES_PIN, PUMP1_ON_SWITCH))
-        system_flags.pump1_on = 0;
+        pump_flags.pump1_on = 0;
     else
-        system_flags.pump1_on = 1;
+        pump_flags.pump1_on = 1;
 
     if (tst_bit(PUMPS_SWITCHES_PIN, PUMP2_ON_SWITCH))
-        system_flags.pump2_on = 0;
+        pump_flags.pump2_on = 0;
     else
-        system_flags.pump2_on = 1;
+        pump_flags.pump2_on = 1;
 
     if (tst_bit(PUMPS_SWITCHES_PIN, PUMP3_ON_SWITCH))
-        system_flags.pump3_on = 0;
+        pump_flags.pump3_on = 0;
     else
-        system_flags.pump3_on = 1;
+        pump_flags.pump3_on = 1;
 
 }
 
 inline void read_switches(void)
 {
+    enum {ON,OFF};
     static uint8_t clk_div_switch_msg = 0;
-    static uint8_t count_motor_on_state = 0;
-    static uint8_t count_motor_off_state = 0;
-    static uint8_t count_DMS_on_state = 0;
-    static uint8_t count_DMS_off_state = 0;
+    static uint8_t count_motor_state[2] = {0,0};
+    static uint8_t count_DMS_state[2] = {0,0};
+    static uint8_t count_emergency_state[2] = {0,0};
+    
 
 
     //TEST DIGITAL PINS AND FILTER THEM
 
     //MOTOR SWITCH
     if (!tst_bit(CTRL_SWITCHES_PIN,MOTOR_ON_SWITCH)){
-        if (++count_motor_on_state >= MOTOR_ON_TO_UPDATE){
-            count_motor_off_state = 0;
+        if (++count_motor_state[ON] >= MOTOR_ON_TO_UPDATE){
+            count_motor_state[OFF] = 0;
             system_flags.motor_on = 1;
         }
     }
     else{
-        if (++count_motor_off_state >= MOTOR_ON_TO_UPDATE){
-            count_motor_on_state = 0;
+        if (++count_motor_state[OFF] >= MOTOR_ON_TO_UPDATE){
+            count_motor_state[ON] = 0;
             system_flags.motor_on = 0;
         }
     }
     //END OF MOTOR SWITCH
 
+    //TEST DIGITAL PINS AND FILTER THEM
+
+    //EMERGENCY SWITCH
+    if (!tst_bit(CTRL_SWITCHES_PIN,MOTOR_ON_SWITCH)){
+        if (++count_emergency_state[ON] >= MOTOR_ON_TO_UPDATE){
+            count_emergency_state[OFF] = 0;
+            system_flags.emergency = 1;
+        }
+    }
+    else{
+        if (++count_emergency_state[OFF] >= MOTOR_ON_TO_UPDATE){
+            count_emergency_state[ON] = 0;
+            system_flags.emergency = 0;
+        }
+    }
+    //END OF EMERGENCY SWITCH
+
     //DEAD MEN SWITCH
     if (tst_bit(DMS_PIN,DMS)){
-        if (++count_DMS_on_state >= DEAD_MEN_TO_UPDATE){
-            count_DMS_off_state = 0;
+        if (++count_DMS_state[ON] >= DEAD_MEN_TO_UPDATE){
+            count_DMS_state[OFF] = 0;
             system_flags.dead_men_switch = 1;
         }
     }   
     else{
-        if (++count_DMS_off_state >= DEAD_MEN_TO_UPDATE){
-            count_DMS_on_state = 0;
+        if (++count_DMS_state[OFF] >= DEAD_MEN_TO_UPDATE){
+            count_DMS_state[ON] = 0;
             system_flags.dead_men_switch = 0;
         }
     }

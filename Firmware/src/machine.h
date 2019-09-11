@@ -45,16 +45,26 @@ typedef enum state_machine{
 typedef union system_flags{
     struct{
         uint8_t     boat_on                :1;
+        uint8_t     boat_switch_on         :1;
         uint8_t     MCS_on                 :1;
         uint8_t     motor_on               :1;
         uint8_t     MCC_on                 :1;
         uint8_t     dead_men_switch        :1;
+        uint8_t     emergency              :1;
+    };
+    uint8_t   all__;
+} system_flags_t;
+
+
+typedef union pump_flags{
+    struct{
         uint8_t     pump1_on               :1;
         uint8_t     pump2_on               :1;
         uint8_t     pump3_on               :1;
     };
     uint8_t   all__;
-} system_flags_t;
+}pump_flags_t;
+
 
 typedef union error_flags{
     struct{
@@ -121,6 +131,7 @@ void buzzer(uint8_t buzzer_frequency, uint8_t buzzer_rhythm_on, uint8_t buzzer_r
 
 // machine variables
 volatile state_machine_t state_machine;
+volatile pump_flags_t pump_flags;
 volatile system_flags_t system_flags;
 volatile error_flags_t error_flags;
 volatile uint16_t charge_count_error;

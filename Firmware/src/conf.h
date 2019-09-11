@@ -38,7 +38,7 @@
 #define BUZZER_ON
 #define WATCHDOG_ON
 #define SLEEP_ON	
-//#define CHECK_MCS_ON
+#define CHECK_MCS_ON
 
 //PINS UPDATE FILTER CONFIGURATION
 #define BOAT_ON_TO_UPDATE 10
@@ -95,24 +95,25 @@
 */
 
 
-#define     PUMPS_SWITCHES_PORT     PORTD
-#define     PUMPS_SWITCHES_PIN      PIND
-#define     PUMPS_SWITCHES_DDR      DDRD
-#define     PUMP1_ON_SWITCH         PD2
-#define     PUMP2_ON_SWITCH         PD3
-#define     PUMP3_ON_SWITCH         PD4
+#define     PUMPS_SWITCHES_PORT     PORTC
+#define     PUMPS_SWITCHES_PIN      PINC
+#define     PUMPS_SWITCHES_DDR      DDRC
+#define     PUMP1_ON_SWITCH         PC3
+#define     PUMP2_ON_SWITCH         PC4
+#define     PUMP3_ON_SWITCH         PC5
 
 #define     DMS_PORT                PORTD
 #define     DMS_PIN                 PIND
 #define     DMS_DDR                 DDRD
-#define     DMS                     PD5
+#define     DMS                     PD6
 
-#define     CTRL_SWITCHES_PORT      PORTC
-#define     CTRL_SWITCHES_PIN       PINC
-#define     CTRL_SWITCHES_DDR       DDRC
-#define     BOAT_ON_SWITCH          PC3
-#define     MOTOR_ON_SWITCH         PC4
-#define     MCC_ON_SWITCH           PC5
+#define     CTRL_SWITCHES_PORT      PORTD
+#define     CTRL_SWITCHES_PIN       PIND
+#define     CTRL_SWITCHES_DDR       DDRD
+#define     EMERGENCY_SWITCH   	    PD7
+#define     BOAT_ON_SWITCH          PD5
+#define     MOTOR_ON_SWITCH         PD3
+#define     MCC_ON_SWITCH           PD2
 
 #define 	MOTOR_PWM_POT			ADC0
 #define  	MOTOR_RAMP_POT			ADC1
@@ -136,7 +137,7 @@
 #define     BUZZER_PORT             PORTD
 #define     BUZZER_PIN              PIND
 #define     BUZZER_DDR              DDRD
-#define     BUZZER                  PD7
+#define     BUZZER                  PD4
 #define     cpl_buzzer()            cpl_bit(BUZZER_PORT, BUZZER)
 #define     set_buzzer()            set_bit(BUZZER_PORT, BUZZER)
 #define     clr_buzzer()            clr_bit(BUZZER_PORT, BUZZER)

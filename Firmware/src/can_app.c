@@ -146,25 +146,25 @@ inline void can_app_send_pumps(void)
     msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] = 0x00;
 
     msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |=
-    (system_flags.pump1_on) << (CAN_MSG_MIC19_PUMPS_PUMP1_BIT);
+    (pump_flags.pump1_on) << (CAN_MSG_MIC19_PUMPS_PUMP1_BIT);
 
     msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |= 
-    (system_flags.pump2_on) << (CAN_MSG_MIC19_PUMPS_PUMP2_BIT);
+    (pump_flags.pump2_on) << (CAN_MSG_MIC19_PUMPS_PUMP2_BIT);
 
     msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |= 
-    (system_flags.pump3_on) << (CAN_MSG_MIC19_PUMPS_PUMP3_BIT);
+    (pump_flags.pump3_on) << (CAN_MSG_MIC19_PUMPS_PUMP3_BIT);
 
         
 
           
 
-        // ((system_flags.pump1_on) << CAN_MSG_MIC19_PUMPS_PUMP1_BIT);
+        // ((pump_flags.pump1_on) << CAN_MSG_MIC19_PUMPS_PUMP1_BIT);
 
     // msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |=
-        // ((system_flags.pump2_on) << CAN_MSG_MIC19_PUMPS_PUMP2_BIT);
+        // ((pump_flags.pump2_on) << CAN_MSG_MIC19_PUMPS_PUMP2_BIT);
 
     // msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |=
-        // ((system_flags.pump3_on) << CAN_MSG_MIC19_PUMPS_PUMP3_BIT);
+        // ((pump_flags.pump3_on) << CAN_MSG_MIC19_PUMPS_PUMP3_BIT);
 
     can_send_message(&msg);
 
