@@ -211,7 +211,6 @@ inline void task_running(void)
     if(!system_flags.boat_on)
         set_state_idle();
 
-
 }
 
 
@@ -295,6 +294,7 @@ inline void read_boat_on(void)
 {
     enum{ON,OFF};
     static uint8_t count_boat_state[2] = {0,0};
+    static uint8_t count_emergency_state[2] = {0,0};
 
     //BOAT SWITCH
     if (!tst_bit(CTRL_SWITCHES_PIN,BOAT_ON_SWITCH)){
@@ -310,6 +310,21 @@ inline void read_boat_on(void)
         }
     }
     //END OF BOAT SWITCH
+
+        //EMERGENCY SWITCH
+    if (!tst_bit(CTRL_SWITCHES_PIN,EMERGENCY_SWITCH)){
+        if (++count_emergency_state[ON] >= EMERGENCY_ON_TO_UPDATE){
+            count_emergency_state[OFF] = 0;
+            system_flags.emergency = 1;
+        }
+    }
+    else{
+        if (++count_emergency_state[OFF] >= EMERGENCY_ON_TO_UPDATE){
+            count_emergency_state[ON] = 0;
+            system_flags.emergency = 0;
+        }
+    }
+    //END OF EMERGENCY SWITCH
 
     if(system_flags.boat_switch_on && system_flags.emergency)
         system_flags.boat_on = 1;
@@ -354,7 +369,7 @@ inline void read_switches(void)
     static uint8_t clk_div_switch_msg = 0;
     static uint8_t count_motor_state[2] = {0,0};
     static uint8_t count_DMS_state[2] = {0,0};
-    static uint8_t count_emergency_state[2] = {0,0};
+    
     
 
 
@@ -377,20 +392,7 @@ inline void read_switches(void)
 
     //TEST DIGITAL PINS AND FILTER THEM
 
-    //EMERGENCY SWITCH
-    if (!tst_bit(CTRL_SWITCHES_PIN,MOTOR_ON_SWITCH)){
-        if (++count_emergency_state[ON] >= MOTOR_ON_TO_UPDATE){
-            count_emergency_state[OFF] = 0;
-            system_flags.emergency = 1;
-        }
-    }
-    else{
-        if (++count_emergency_state[OFF] >= MOTOR_ON_TO_UPDATE){
-            count_emergency_state[ON] = 0;
-            system_flags.emergency = 0;
-        }
-    }
-    //END OF EMERGENCY SWITCH
+
 
     //DEAD MEN SWITCH
     if (tst_bit(DMS_PIN,DMS)){
