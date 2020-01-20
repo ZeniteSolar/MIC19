@@ -11,7 +11,7 @@
 #define CAN_FILTERS_H
 
 #include "conf.h"
-#include "../CAN_IDS19/can_ids.h"
+#include "can_ids.h"
 
 // -----------------------------------------------------------------------------
 /** Set filters and masks.
@@ -69,16 +69,16 @@ const uint8_t can_filter[] PROGMEM =
 {
     // Group 0
     MCP2515_FILTER(CAN_MSG_MIC19_MCS), // Filter 0
-    MCP2515_FILTER(CAN_MSG_MCS19_RELAY), // Filter 1
+    MCP2515_FILTER(CAN_MSG_MCS19_START_STAGES_ID), // Filter 1
 
     // Group 1
     MCP2515_FILTER(CAN_MSG_MIC19_MCS), // Filter 0
-    MCP2515_FILTER(CAN_MSG_MCS19_RELAY), // Filter 0
+    MCP2515_FILTER(CAN_MSG_MCS19_START_STAGES_ID), // Filter 0
     MCP2515_FILTER(CAN_MSG_MIC19_MCS), // Filter 1
     MCP2515_FILTER(CAN_MSG_MIC19_MCS), // Filter 1
 
     MCP2515_FILTER(CAN_MASK_MIC19),             // Mask 0 (for group 0)
-    MCP2515_FILTER(CAN_MASK_MCS17),             // Mask 1 (for group 1)
+    MCP2515_FILTER(CAN_MASK_MCS19),             // Mask 1 (for group 1)
 };
 // You can receive 11 bit identifiers with either group 0 or 1.
 

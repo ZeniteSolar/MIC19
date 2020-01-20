@@ -88,8 +88,8 @@ inline void can_app_send_state(void)
 inline void can_app_send_motor(void)
 {
     can_t msg;
-    msg.id                                  = CAN_MSG_MIC19_MOTOR;
-    msg.length                              = CAN_LENGTH_MSG_MIC19_MOTOR;
+    msg.id                                  = CAN_MSG_MIC19_MOTOR_ID;
+    msg.length                              = CAN_MSG_MIC19_MOTOR_LENGTH;
     msg.flags.rtr = 0;
 
     average_potentiometers();
@@ -98,14 +98,14 @@ inline void can_app_send_motor(void)
 
 
           = CAN_SIGNATURE_SELF;
-    msg.data[CAN_MSG_MIC19_MOTOR_D_RAW_BYTE]    = control.motor_PWM_target.avg;
-    msg.data[CAN_MSG_MIC19_MOTOR_I_RAW_BYTE]    = control.motor_RAMP_target.avg;
+    msg.data[CAN_MSG_MIC19_MOTOR_D_BYTE]    = control.motor_PWM_target.avg;
+    msg.data[CAN_MSG_MIC19_MOTOR_I_BYTE]    = control.motor_RAMP_target.avg;
 
-    msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_ON_BYTE] = 
-        ((system_flags.motor_on) << CAN_MSG_MIC19_MOTOR_MOTOR_ON_BIT);
+    msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] = 
+        ((system_flags.motor_on) << CAN_MSG_MIC19_MOTOR_MOTOR_MOTOR_ON_BIT);
 
-    msg.data[CAN_MSG_MIC19_MOTOR_DMS_BYTE] |= 
-        ((system_flags.dead_men_switch) << CAN_MSG_MIC19_MOTOR_DMS_BIT);
+    msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] |= 
+        ((system_flags.dead_men_switch) << CAN_MSG_MIC19_MOTOR_MOTOR_DMS_ON_BIT);
 
     can_send_message(&msg);
 
@@ -114,8 +114,8 @@ inline void can_app_send_motor(void)
 inline void can_app_send_boat(void)
 {
     can_t msg;
-    msg.id                                  = CAN_MSG_MIC19_MCS;
-    msg.length                              = CAN_LENGHT_MSG_MIC19_MCS;
+    msg.id                                  = CAN_MSG_MIC19_MCS_ID;
+    msg.length                              = CAN_MSG_MIC19_MCS_LENGTH;
     msg.flags.rtr = 0;
 
     average_potentiometers();
@@ -137,7 +137,7 @@ inline void can_app_send_pumps(void)
 
     can_t msg;
     msg.id                                  = CAN_MSG_MIC19_PUMPS_ID;
-    msg.length                              = CAN_LENGTH_MSG_MIC19_PUMPS;
+    msg.length                              = CAN_MSG_MIC19_PUMPS_LENGTH;
     msg.flags.rtr = 0;
 
 
@@ -172,13 +172,13 @@ inline void can_app_send_pumps(void)
 
 inline void can_app_extractor_mcs_relay(can_t *msg)
 {
-    if(msg->data[CAN_SIGNATURE_BYTE] == CAN_SIGNATURE_MCS17){
+    if(msg->data[CAN_SIGNATURE_BYTE] == CAN_SIGNATURE_MCS19){
         
         // can_app_checks_without_mic17_msg = 0;
 
-        if(msg->data[CAN_MSG_MCS19_MAIN_RELAY_BYTE] == 0xFF){
+        if(msg->data[CAN_MSG_MCS19_START_STAGES_MAIN_RELAY_BYTE] == 0xFF){
             system_flags.MCS_on = 1;
-        }else if(msg->data[CAN_MSG_MCS19_MAIN_RELAY_BYTE] == 0x00){
+        }else if(msg->data[CAN_MSG_MCS19_START_STAGES_MAIN_RELAY_BYTE] == 0x00){
             system_flags.MCS_on = 0;
         }
 
@@ -205,8 +205,8 @@ EXAMPLE OF SEND adc
 inline void can_app_send_bat(void)
 {
     can_t msg;
-    msg.id                                  = CAN_MSG_MSC19_ADC;
-    msg.length                              = CAN_LENGTH_MSG_MSC19_ADC;
+    msg.id                                  = CAN_MSG_MCS19_ADC;
+    msg.length                              = CAN_LENGTH_MSG_MCS19_ADC;
     msg.flags.rtr = 0;
     
     uint16_t avg_adc0 = 
@@ -270,11 +270,11 @@ inline void can_app_extractor_mic17_mcs(can_t *msg)
  */
 inline void can_app_msg_extractors_switch(can_t *msg)
 {
-    if(msg->data[CAN_SIGNATURE_BYTE] == CAN_SIGNATURE_MCS17){
+    if(msg->data[CAN_SIGNATURE_BYTE] == CAN_SIGNATURE_MCS19){
 
         switch(msg->id){
             
-            case CAN_MSG_MCS19_RELAY:
+            case CAN_MSG_MCS19_START_STAGES_ID:
                 VERBOSE_MSG_CAN_APP(usart_send_string("got a mcs msg: "));
                 VERBOSE_MSG_CAN_APP(can_app_print_msg(msg));
                 can_app_extractor_mcs_relay(msg);
