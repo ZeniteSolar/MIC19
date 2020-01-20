@@ -214,12 +214,12 @@ inline void can_app_send_bat(void)
 
 
     msg.data[CAN_SIGNATURE_BYTE]            = CAN_SIGNATURE_SELF;
-    msg.data[CAN_MSG_MCS19_BAT_AVG_BYTE_L] =  LOW(avg_adc0);
-    msg.data[CAN_MSG_MCS19_BAT_AVG_BYTE_H] =  HIGH(avg_adc0);
-    msg.data[CAN_MSG_MCS19_BAT_MIN_BYTE_L]  = LOW(measurements.adc0_min);
-    msg.data[CAN_MSG_MCS19_BAT_MIN_BYTE_H]  = HIGH(measurements.adc0_min);
-    msg.data[CAN_MSG_MCS19_BAT_MAX_BYTE_L]  = LOW(measurements.adc0_max);
-    msg.data[CAN_MSG_MCS19_BAT_MAX_BYTE_H]  = HIGH(measurements.adc0_max);
+    msg.data[CAN_MSG_MCS19_BAT_AVG_L_BYTE] =  LOW(avg_adc0);
+    msg.data[CAN_MSG_MCS19_BAT_AVG_H_BYTE] =  HIGH(avg_adc0);
+    msg.data[CAN_MSG_MCS19_BAT_MIN_L_BYTE]  = LOW(measurements.adc0_min);
+    msg.data[CAN_MSG_MCS19_BAT_MIN_H_BYTE]  = HIGH(measurements.adc0_min);
+    msg.data[CAN_MSG_MCS19_BAT_MAX_L_BYTE]  = LOW(measurements.adc0_max);
+    msg.data[CAN_MSG_MCS19_BAT_MAX_H_BYTE]  = HIGH(measurements.adc0_max);
 
     can_send_message(&msg); 
 #ifdef VERBOSE_MSG_CAN_APP
