@@ -70,7 +70,7 @@ inline void can_app_task(void)
 inline void can_app_send_state(void)
 {
     can_t msg;
-    msg.id                                  = CAN_FILTER_MSG_MIC19_STATE;
+    msg.id                                  = CAN_MSG_MIC19_STATE_ID;
     msg.length                              = CAN_LENGTH_MSG_STATE;
     msg.flags.rtr = 0;
 
@@ -88,7 +88,7 @@ inline void can_app_send_state(void)
 inline void can_app_send_motor(void)
 {
     can_t msg;
-    msg.id                                  = CAN_FILTER_MSG_MIC19_MOTOR;
+    msg.id                                  = CAN_MSG_MIC19_MOTOR;
     msg.length                              = CAN_LENGTH_MSG_MIC19_MOTOR;
     msg.flags.rtr = 0;
 
@@ -114,7 +114,7 @@ inline void can_app_send_motor(void)
 inline void can_app_send_boat(void)
 {
     can_t msg;
-    msg.id                                  = CAN_FILTER_MSG_MIC19_MCS;
+    msg.id                                  = CAN_MSG_MIC19_MCS;
     msg.length                              = CAN_LENGHT_MSG_MIC19_MCS;
     msg.flags.rtr = 0;
 
@@ -136,7 +136,7 @@ inline void can_app_send_pumps(void)
 {
 
     can_t msg;
-    msg.id                                  = CAN_FILTER_MSG_MIC19_PUMPS;
+    msg.id                                  = CAN_MSG_MIC19_PUMPS_ID;
     msg.length                              = CAN_LENGTH_MSG_MIC19_PUMPS;
     msg.flags.rtr = 0;
 
@@ -146,25 +146,25 @@ inline void can_app_send_pumps(void)
     msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] = 0x00;
 
     msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |=
-    (pump_flags.pump1_on) << (CAN_MSG_MIC19_PUMPS_PUMP1_BIT);
+    (pump_flags.pump1_on) << (CAN_MSG_MIC19_PUMPS_PUMPS_PUMP1_BIT);
 
     msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |= 
-    (pump_flags.pump2_on) << (CAN_MSG_MIC19_PUMPS_PUMP2_BIT);
+    (pump_flags.pump2_on) << (CAN_MSG_MIC19_PUMPS_PUMPS_PUMP2_BIT);
 
     msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |= 
-    (pump_flags.pump3_on) << (CAN_MSG_MIC19_PUMPS_PUMP3_BIT);
+    (pump_flags.pump3_on) << (CAN_MSG_MIC19_PUMPS_PUMPS_PUMP3_BIT);
 
         
 
           
 
-        // ((pump_flags.pump1_on) << CAN_MSG_MIC19_PUMPS_PUMP1_BIT);
+        // ((pump_flags.pump1_on) << CAN_MSG_MIC19_PUMPS_PUMPS_PUMP1_BIT);
 
     // msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |=
-        // ((pump_flags.pump2_on) << CAN_MSG_MIC19_PUMPS_PUMP2_BIT);
+        // ((pump_flags.pump2_on) << CAN_MSG_MIC19_PUMPS_PUMPS_PUMP2_BIT);
 
     // msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |=
-        // ((pump_flags.pump3_on) << CAN_MSG_MIC19_PUMPS_PUMP3_BIT);
+        // ((pump_flags.pump3_on) << CAN_MSG_MIC19_PUMPS_PUMPS_PUMP3_BIT);
 
     can_send_message(&msg);
 
@@ -184,8 +184,8 @@ inline void can_app_extractor_mcs_relay(can_t *msg)
 
 
         //system_flags.boat_on       = bit_is_set(msg->data[
-        //    CAN_MSG_MIC17_MCS_BOAT_ON_BYTE], 
-        //    CAN_MSG_MIC17_MCS_BOAT_ON_BIT);
+        //    CAN_MSG_MIC19_MCS_BOAT_ON_BYTE], 
+        //    CAN_MSG_MIC19_MCS_BOAT_ON_BIT);
 
 
         //VERBOSE_MSG_CAN_APP(usart_send_string("boat on bit: "));
@@ -205,7 +205,7 @@ EXAMPLE OF SEND adc
 inline void can_app_send_bat(void)
 {
     can_t msg;
-    msg.id                                  = CAN_FILTER_MSG_MSC19_ADC;
+    msg.id                                  = CAN_MSG_MSC19_ADC;
     msg.length                              = CAN_LENGTH_MSG_MSC19_ADC;
     msg.flags.rtr = 0;
     
@@ -238,19 +238,19 @@ EXAMPLE OF extract mensage
 ########################################################################
 inline void can_app_extractor_mic17_mcs(can_t *msg)
 {
-    if(msg->data[CAN_SIGNATURE_BYTE] == CAN_SIGNATURE_MIC17){
+    if(msg->data[CAN_SIGNATURE_BYTE] == CAN_SIGNATURE_MIC19){
         
         // can_app_checks_without_mic17_msg = 0;
 
-        if(msg->data[CAN_MSG_MIC17_MCS_BOAT_ON_BYTE] == 0xFF){
+        if(msg->data[CAN_MSG_MIC19_MCS_BOAT_ON_BYTE] == 0xFF){
             system_flags.boat_on = 1;
-        }else if(msg->data[CAN_MSG_MIC17_MCS_BOAT_ON_BYTE] == 0x00){
+        }else if(msg->data[CAN_MSG_MIC19_MCS_BOAT_ON_BYTE] == 0x00){
             system_flags.boat_on = 0;
         }
 
         //system_flags.boat_on       = bit_is_set(msg->data[
-        //    CAN_MSG_MIC17_MCS_BOAT_ON_BYTE], 
-        //    CAN_MSG_MIC17_MCS_BOAT_ON_BIT);
+        //    CAN_MSG_MIC19_MCS_BOAT_ON_BYTE], 
+        //    CAN_MSG_MIC19_MCS_BOAT_ON_BIT);
 
 
         VERBOSE_MSG_CAN_APP(usart_send_string("boat on bit: "));
@@ -274,7 +274,7 @@ inline void can_app_msg_extractors_switch(can_t *msg)
 
         switch(msg->id){
             
-            case CAN_FILTER_MSG_MCS19_RELAY:
+            case CAN_MSG_MCS19_RELAY:
                 VERBOSE_MSG_CAN_APP(usart_send_string("got a mcs msg: "));
                 VERBOSE_MSG_CAN_APP(can_app_print_msg(msg));
                 can_app_extractor_mcs_relay(msg);
@@ -294,11 +294,11 @@ inline void can_app_msg_extractors_switch(can_t *msg)
 inline void check_can(void)
 {
     // If no messages is received from mic17 for
-    // CAN_APP_CHECKS_WITHOUT_MIC17_MSG cycles, than it go to a specific error state. 
+    // CAN_APP_CHECKS_WITHOUT_MIC19_MSG cycles, than it go to a specific error state. 
     //VERBOSE_MSG_CAN_APP(usart_send_string("checks: "));
     //VERBOSE_MSG_CAN_APP(usart_send_uint16(can_app_checks_without_mic17_msg));
 // #ifdef CAN_DEPENDENT
-//     if(can_app_checks_without_mic17_msg++ >= CAN_APP_CHECKS_WITHOUT_MIC17_MSG){
+//     if(can_app_checks_without_mic17_msg++ >= CAN_APP_CHECKS_WITHOUT_MIC19_MSG){
 // #ifdef USART_ON
 //         VERBOSE_MSG_CAN_APP(usart_send_string("Error: too many cycles withtou message.\n"));
 // #endif
