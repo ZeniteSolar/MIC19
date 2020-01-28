@@ -119,8 +119,21 @@ inline void print_configurations(void)
 */
 inline void print_system_flags(void)
 {
-    //VERBOSE_MSG_MACHINE(usart_send_string(" EN "));
-    //VERBOSE_MSG_MACHINE(usart_send_char(48+system_flags.enable));
+    usart_send_string(",boat_on:" );
+    usart_send_char('0' + system_flags.boat_on);
+    usart_send_string(",boat_switch_on:" );
+    usart_send_char('0' + system_flags.boat_switch_on);
+    usart_send_string(",motor_on:" );
+    usart_send_char('0' + system_flags.motor_on);
+    usart_send_string(",MCS_on:" );
+    usart_send_char('0' + system_flags.MCS_on);
+    usart_send_string(",MCC_on:" );
+    usart_send_char('0' + system_flags.MCC_on);
+    usart_send_string(",DMS:" );
+    usart_send_char('0' + system_flags.dead_men_switch);
+    usart_send_string(",emergency:" );
+    usart_send_char('0' + system_flags.emergency);
+    usart_send_char('\n');
 }
 
 /**
@@ -525,6 +538,7 @@ inline void machine_run(void)
 {
     //print_infos();
     
+    //print_system_flags();
 
     if(machine_clk){
         machine_clk = 0;

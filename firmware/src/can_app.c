@@ -33,7 +33,7 @@ inline void can_app_task(void)
 
     if(can_app_send_state_clk_div++ >= CAN_APP_SEND_STATE_CLK_DIV){
 #ifdef USART_ON
-      //  VERBOSE_MSG_CAN_APP(usart_send_string("state msg was sent.\n"));
+        VERBOSE_MSG_CAN_APP(usart_send_string("state msg was sent.\n"));
 #endif
         can_app_send_state();
         can_app_send_state_clk_div = 0;
@@ -41,7 +41,7 @@ inline void can_app_task(void)
 
     if(can_app_send_motor_clk_div++ >= CAN_APP_SEND_MOTOR_CLK_DIV){
 #ifdef USART_ON
-       // VERBOSE_MSG_CAN_APP(usart_send_string("motor msg was sent.\n"));
+        VERBOSE_MSG_CAN_APP(usart_send_string("motor msg was sent.\n"));
 #endif
         can_app_send_motor();
         can_app_send_motor_clk_div = 0;
@@ -50,7 +50,7 @@ inline void can_app_task(void)
 
     if(can_app_send_boat_clk_div++ >= CAN_APP_SEND_BOAT_CLK_DIV){
 #ifdef USART_ON
-       // VERBOSE_MSG_CAN_APP(usart_send_string("boat msg was sent.\n"));
+        VERBOSE_MSG_CAN_APP(usart_send_string("boat msg was sent.\n"));
 #endif
         can_app_send_boat();
         can_app_send_boat_clk_div = 0;
@@ -59,7 +59,7 @@ inline void can_app_task(void)
 
     if(can_app_send_pumps_clk_div++ >= CAN_APP_SEND_BOAT_CLK_DIV){
 #ifdef USART_ON
-       // VERBOSE_MSG_CAN_APP(usart_send_string("pumps msg was sent.\n"));
+        VERBOSE_MSG_CAN_APP(usart_send_string("pumps msg was sent.\n"));
 #endif
         can_app_send_pumps();
         can_app_send_pumps_clk_div = 0;
@@ -80,8 +80,8 @@ inline void can_app_send_state(void)
 
     can_send_message(&msg);
 #ifdef VERBOSE_MSG_CAN_APP
-    //ERBOSE_MSG_CAN_APP(usart_send_string("state msg was send.\n"));
-//    VERBOSE_MSG_CAN_APP(can_app_print_msg(&msg));
+    VERBOSE_MSG_CAN_APP(usart_send_string("state msg was send.\n"));
+    VERBOSE_MSG_CAN_APP(can_app_print_msg(&msg));
 #endif
 }
 
@@ -188,10 +188,9 @@ inline void can_app_extractor_mcs_relay(can_t *msg)
         //    CAN_MSG_MIC19_MCS_BOAT_ON_BIT);
 
 
-        //VERBOSE_MSG_CAN_APP(usart_send_string("boat on bit: "));
-        //VERBOSE_MSG_CAN_APP(usart_send_uint16(system_flags.boat_on));
-        //VERBOSE_MSG_CAN_APP(usart_send_char('\n'));
-
+        VERBOSE_MSG_CAN_APP(usart_send_string("boat on bit: "));
+        VERBOSE_MSG_CAN_APP(usart_send_uint16(system_flags.boat_on));
+        VERBOSE_MSG_CAN_APP(usart_send_char('\n'));
 
     }
 }
