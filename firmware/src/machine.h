@@ -8,7 +8,7 @@
  */
 
 #ifndef MACHINE_H
-#define MACHINE_H 
+#define MACHINE_H
 
 #include <avr/io.h>
 #include <avr/wdt.h>
@@ -85,7 +85,6 @@ typedef struct control
     sub_control_t motor_RAMP_target;
     sub_control_t MCC_POWER_target;
 }control_t;
-control_t control;
 
 
 
@@ -130,24 +129,21 @@ void average_potentiometers(void);
 void buzzer(uint8_t buzzer_frequency, uint8_t buzzer_rhythm_on, uint8_t buzzer_rhythm_off);
 
 // machine variables
-volatile state_machine_t state_machine;
-volatile pump_flags_t pump_flags;
-volatile system_flags_t system_flags;
-volatile error_flags_t error_flags;
-volatile uint16_t charge_count_error;
-volatile uint8_t relay_clk;
-volatile uint8_t first_boat_off;
-volatile uint8_t machine_clk;
-volatile uint8_t machine_clk_divider;
-volatile uint8_t total_errors;           // Contagem de ERROS
-volatile uint16_t charge_count_error;
-volatile uint8_t reset_clk;
+extern volatile state_machine_t state_machine;
+extern volatile control_t control;
+extern volatile pump_flags_t pump_flags;
+extern volatile system_flags_t system_flags;
+extern volatile error_flags_t error_flags;
+extern volatile uint16_t charge_count_error;
+extern volatile uint8_t relay_clk;
+extern volatile uint8_t first_boat_off;
+extern volatile uint8_t machine_clk;
+extern volatile uint8_t machine_clk_divider;
+extern volatile uint8_t total_errors;           // Contagem de ERROS
+extern volatile uint16_t charge_count_error;
+extern volatile uint8_t reset_clk;
 
 // other variables
-volatile uint8_t led_clk_div;
-
-// ISRs
-ISR(TIMER2_COMPA_vect);
-ISR(PCINT2_vect);
+extern volatile uint8_t led_clk_div;
 
 #endif /* ifndef MACHINE_H */

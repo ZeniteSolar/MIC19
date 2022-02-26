@@ -26,9 +26,9 @@
 #define ADC_TIMER_FREQUENCY     ((uint32_t)(ADC_FREQUENCY)*(uint8_t)(ADC_LAST_CHANNEL +1))
 #define ADC_TIMER_TOP           ((F_CPU/(2*ADC_TIMER_PRESCALER))/(ADC_TIMER_FREQUENCY) -1)
 
-typedef enum adc_channels{ 
+typedef enum adc_channels{
     ADC0, ADC1 ,ADC2, ADC3, ADC4, ADC5
-} adc_channels_t;                           //*< the adc_channel type 
+} adc_channels_t;                           //*< the adc_channel type
 
 #define ADC_LAST_CHANNEL ADC2
 
@@ -44,7 +44,7 @@ typedef struct adc{
     uint8_t ready;
 } adc_t;
 
-volatile adc_t adc;
+extern volatile adc_t adc;
 
 uint8_t adc_select_channel(adc_channels_t __ch);
 void adc_init(void);

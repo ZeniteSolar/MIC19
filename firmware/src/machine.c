@@ -1,8 +1,23 @@
 #include "machine.h"
 
+volatile state_machine_t state_machine;
+volatile control_t control;
+volatile pump_flags_t pump_flags;
+volatile system_flags_t system_flags;
+volatile error_flags_t error_flags;
+volatile uint16_t charge_count_error;
+volatile uint8_t relay_clk;
+volatile uint8_t first_boat_off;
+volatile uint8_t machine_clk;
+volatile uint8_t machine_clk_divider;
+volatile uint8_t total_errors;           // Contagem de ERROS
+volatile uint16_t charge_count_error;
+volatile uint8_t reset_clk;
+
+volatile uint8_t led_clk_div;
 
 /**
- * @brief 
+ * @brief
  */
 void machine_init(void)
 {
@@ -39,7 +54,7 @@ void machine_init(void)
 
     set_machine_initial_state();
     set_state_initializing();
-} 
+}
 
 /**
  * @brief set machine initial state
@@ -61,7 +76,7 @@ inline void set_state_error(void)
 
 /**
 * @brief set initializing state
-*/ 
+*/
 inline void set_state_initializing(void)
 {
     VERBOSE_MSG_MACHINE(usart_send_string("\n>>>INITIALIZING STATE\n"));
@@ -70,7 +85,7 @@ inline void set_state_initializing(void)
 
 /**
 * @brief set idle state
-*/ 
+*/
 inline void set_state_idle(void)
 {
     VERBOSE_MSG_MACHINE(usart_send_string("\n>>>IDLE STATE\n"));
@@ -79,7 +94,7 @@ inline void set_state_idle(void)
 
 /**
 * @brief set running state
-*/ 
+*/
 inline void set_state_running(void)
 {
     VERBOSE_MSG_MACHINE(usart_send_string("\n>>>RUNNING STATE\n"));
@@ -101,9 +116,9 @@ inline void set_state_reset(void)
  * @breif prints the configurations and definitions
  */
 inline void print_configurations(void)
-{    
+{
     VERBOSE_MSG_MACHINE(usart_send_string("CONFIGURATIONS:\n"));
-    
+
     VERBOSE_MSG_MACHINE(usart_send_string("\nadc_f: "));
     VERBOSE_MSG_MACHINE(usart_send_uint16( ADC_FREQUENCY ));
     VERBOSE_MSG_MACHINE(usart_send_char(','));
@@ -145,7 +160,7 @@ inline void print_error_flags(void)
     //VERBOSE_MSG_MACHINE(usart_send_string(" errFl: "));
     //VERBOSE_MSG_MACHINE(usart_send_char(48+error_flags.no_canbus));
 }
- 
+
 
 
 inline void task_initializing(void)
@@ -159,7 +174,7 @@ inline void task_initializing(void)
 
     VERBOSE_MSG_INIT(usart_send_string("System initialized without errors.\n"));
     set_state_idle();
-} 
+}
 
 
 
@@ -172,7 +187,7 @@ inline void task_idle(void)
     if(led_clk_div++ >= 30){
         cpl_led(LED1);
         led_clk_div = 0;
-    }        
+    }
 #endif
 #ifdef BUZZER_ON
     buzzer(2,2,128);
@@ -189,7 +204,7 @@ inline void task_idle(void)
 #ifdef CHECK_MCS_ON
     if(system_flags.MCS_on && system_flags.boat_on)
         set_state_running();
-#else    
+#else
     if(system_flags.boat_on)
         set_state_running();
 #endif
@@ -209,7 +224,7 @@ inline void task_running(void)
 
     read_pump_switches();
 
-    acumulate_potentiometers();    
+    acumulate_potentiometers();
 
 #ifdef LED_ON
     if(led_clk_div++ >= 2){
@@ -252,7 +267,7 @@ inline void buzzer(uint8_t buzzer_frequency, uint8_t buzzer_rhythm_on, uint8_t b
         if(++buzzer_frequency_clk_div >= buzzer_frequency){
         buzzer_frequency_clk_div = 0;
         cpl_buzzer();
-        }        
+        }
     }else{
         clr_buzzer();
         if(buzzer_rhythm_clk_div >= buzzer_rhythm_off + buzzer_rhythm_on)
@@ -288,15 +303,15 @@ inline void acumulate_potentiometers(void)
 
 inline void average_potentiometers(void)
 {
-    control.motor_PWM_target.avg = 
+    control.motor_PWM_target.avg =
     control.motor_PWM_target.sum / control.motor_PWM_target.samples;
     control.motor_PWM_target.sum = control.motor_PWM_target.samples = 0;
 
-    control.motor_RAMP_target.avg = 
+    control.motor_RAMP_target.avg =
     control.motor_RAMP_target.sum / control.motor_RAMP_target.samples;
     control.motor_RAMP_target.sum = control.motor_RAMP_target.samples = 0;
 
-    control.MCC_POWER_target.avg = 
+    control.MCC_POWER_target.avg =
     control.MCC_POWER_target.sum / control.MCC_POWER_target.samples;
     control.MCC_POWER_target.sum = control.MCC_POWER_target.samples = 0;
 
@@ -382,8 +397,8 @@ inline void read_switches(void)
     static uint8_t clk_div_switch_msg = 0;
     static uint8_t count_motor_state[2] = {0,0};
     static uint8_t count_DMS_state[2] = {0,0};
-    
-    
+
+
 
 
     //TEST DIGITAL PINS AND FILTER THEM
@@ -413,7 +428,7 @@ inline void read_switches(void)
             count_DMS_state[OFF] = 0;
             system_flags.dead_men_switch = 1;
         }
-    }   
+    }
     else{
         if (++count_DMS_state[OFF] >= DEAD_MEN_TO_UPDATE){
             count_DMS_state[ON] = 0;
@@ -465,11 +480,11 @@ inline void task_error(void)
 
     if(!error_flags.all)
         VERBOSE_MSG_ERROR(usart_send_string("\t - Oh no, it was some unknown error.\n"));
- 
+
     VERBOSE_MSG_ERROR(usart_send_string("The error level is: "));
     VERBOSE_MSG_ERROR(usart_send_uint16(total_errors));
     VERBOSE_MSG_ERROR(usart_send_char('\n'));
-    
+
     if(total_errors < 2){
         VERBOSE_MSG_ERROR(usart_send_string("I will reset the machine state.\n"));
     }
@@ -478,7 +493,7 @@ inline void task_error(void)
         set_state_reset();
     }
 
-        
+
 #ifdef LED_ON
     cpl_led(LED1);
 #endif
@@ -487,12 +502,12 @@ inline void task_error(void)
 
 }
 
-                    
+
 /**
  * @brief reset error task just freezes the processor and waits for watchdog
  */
 inline void task_reset(void)
-{   
+{
 #ifndef WATCHDOG_ON
     //wdt_init();
 #endif
@@ -521,7 +536,7 @@ void print_infos(void)
             //print_error_flags();
             break;
         case 2:
-            //print_control_others(); 
+            //print_control_others();
         default:
             //VERBOSE_MSG_MACHINE(usart_send_char('\n'));
             i = 0;
@@ -537,7 +552,7 @@ void print_infos(void)
 inline void machine_run(void)
 {
     //print_infos();
-    
+
     //print_system_flags();
 
     if(machine_clk){
@@ -565,13 +580,13 @@ inline void machine_run(void)
                     task_idle();
                     #ifdef CAN_ON
                         can_app_task();
-                    #endif /* CAN_ON */   
+                    #endif /* CAN_ON */
                     break;
                 case STATE_RUNNING:
                     task_running();
                     #ifdef CAN_ON
                         can_app_task();
-                    #endif /* CAN_ON */   
+                    #endif /* CAN_ON */
 
                     break;
                 case STATE_ERROR:
@@ -582,7 +597,7 @@ inline void machine_run(void)
                     task_reset();
                     break;
             }
-        } 
+        }
     #endif /* ADC_ON */
     }
 }
@@ -603,4 +618,3 @@ ISR(TIMER2_COMPA_vect)
         machine_clk_divider = 0;
     }
 }
-

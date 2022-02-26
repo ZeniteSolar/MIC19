@@ -1,5 +1,7 @@
 #include "adc.h"
 
+volatile adc_t adc;
+
 /**
  * @brief Changes ADC channel
  * @param __ch is the channel to be switched to
@@ -58,7 +60,7 @@ void adc_init(void)
     //clr_bit(PRR0, PRTIM0);                          // Activates clock to timer0
     // MODE 2 -> CTC with TOP on OCR1
     TCCR0A  =   (1 << WGM01) | (0 << WGM00)         // mode 2
-            | (0 << COM0B1) | (0 << COM0B0)         // do nothing 
+            | (0 << COM0B1) | (0 << COM0B0)         // do nothing
             | (0 << COM0A1) | (0 << COM0A0);        // do nothing
 
     TCCR0B  =
@@ -121,14 +123,13 @@ ISR(ADC_vect)
     if(++adc.select > ADC_LAST_CHANNEL){
         adc.select = ADC0;             // recycles
     }
-    
-        adc_select_channel(adc.select);                           
-    
+
+        adc_select_channel(adc.select);
+
 }
- 
+
 /**
  * @brief ISR necessária para auto-trigger do ADC. Caso contrário, dispara
  * BADISR_vect.
  */
 EMPTY_INTERRUPT(TIMER0_COMPA_vect);
-
