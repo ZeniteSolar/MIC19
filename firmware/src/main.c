@@ -131,8 +131,9 @@ EXAMPLE OF PIN INIT
     set_bit(PUMPS_SWITCHES_PORT, PUMP1_ON_SWITCH);     //Ativa o pull-up
     clr_bit(PUMPS_SWITCHES_DDR, PUMP2_ON_SWITCH);      //Como entrada
     set_bit(PUMPS_SWITCHES_PORT, PUMP2_ON_SWITCH);     //Ativa o pull-up
-    clr_bit(PUMPS_SWITCHES_DDR, PUMP3_ON_SWITCH);      //Como entrada
-    set_bit(PUMPS_SWITCHES_PORT, PUMP3_ON_SWITCH);     //Ativa o pull-up
+
+    clr_bit(REVERSE_SWITCH_DDR, REVERSE_SWITCH);      //Como entrada
+    set_bit(REVERSE_SWITCH_PORT, REVERSE_SWITCH);     //Ativa o pull-up
     VERBOSE_MSG_INIT(usart_send_string("OK!\n"));
 
         

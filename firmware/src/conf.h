@@ -101,7 +101,11 @@
 #define     PUMPS_SWITCHES_DDR      DDRC
 #define     PUMP1_ON_SWITCH         PC3
 #define     PUMP2_ON_SWITCH         PC4
-#define     PUMP3_ON_SWITCH         PC5
+
+#define     REVERSE_SWITCH_PORT     PORTC
+#define     REVERSE_SWITCH_PIN      PINC
+#define     REVERSE_SWITCH_DDR      DDRC
+#define     REVERSE_SWITCH          PC5
 
 #define     DMS_PORT                PORTD
 #define     DMS_PIN                 PIND

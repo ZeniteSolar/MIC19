@@ -167,6 +167,9 @@ inline void can_app_send_motor(void)
     msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] |=
         ((system_flags.dead_men_switch) << CAN_MSG_MIC19_MOTOR_MOTOR_DMS_ON_BIT);
 
+    msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] |=
+        ((system_flags.reverse) << CAN_MSG_MIC19_MOTOR_MOTOR_REVERSE_BIT);
+
     can_send_message(&msg);
 
 }
@@ -209,9 +212,6 @@ inline void can_app_send_pumps(void)
 
     msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |=
     (pump_flags.pump2_on) << (CAN_MSG_MIC19_PUMPS_PUMPS_PUMP2_BIT);
-
-    msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] |=
-    (pump_flags.pump3_on) << (CAN_MSG_MIC19_PUMPS_PUMPS_PUMP3_BIT);
 
     can_send_message(&msg);
 

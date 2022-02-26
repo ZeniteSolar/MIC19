@@ -148,6 +148,8 @@ inline void print_system_flags(void)
     usart_send_char('0' + system_flags.dead_men_switch);
     usart_send_string(",emergency:" );
     usart_send_char('0' + system_flags.emergency);
+    usart_send_string(",reverse:" );
+    usart_send_char('0' + system_flags.reverse);
     usart_send_char('\n');
 }
 
@@ -384,11 +386,6 @@ inline void read_pump_switches(void)
     else
         pump_flags.pump2_on = 1;
 
-    if (tst_bit(PUMPS_SWITCHES_PIN, PUMP3_ON_SWITCH))
-        pump_flags.pump3_on = 0;
-    else
-        pump_flags.pump3_on = 1;
-
 }
 
 inline void read_switches(void)
@@ -436,6 +433,14 @@ inline void read_switches(void)
         }
     }
     //END OF DEAD MEN SWITCH
+
+    //REVERSE SWITCH
+    if (tst_bit(REVERSE_SWITCH_PIN, REVERSE_SWITCH)){
+        system_flags.reverse = 0;
+    }else{
+        system_flags.reverse = 1;
+    }
+    //END OF REVERSE SWITCH
 
     if (!tst_bit(CTRL_SWITCHES_PIN, MCC_ON_SWITCH))
         system_flags.MCC_on = 1;
