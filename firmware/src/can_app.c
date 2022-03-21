@@ -68,6 +68,7 @@ inline void can_app_extractor_mic17_mcs(can_t *msg)
 
 uint32_t can_app_send_state_clk_div;
 uint32_t can_app_send_motor_clk_div;
+uint32_t can_app_send_mde_clk_div;
 uint32_t can_app_send_boat_clk_div;
 uint32_t can_app_send_pumps_clk_div;
 
@@ -128,6 +129,12 @@ inline void can_app_task(void)
         can_app_send_pumps_clk_div = 0;
     }
 
+
+    if(can_app_send_mde_clk_div++ >= CAN_APP_SEND_BOAT_CLK_DIV){
+        VERBOSE_MSG_CAN_APP(usart_send_string("steering wheel msg was sent.\n"));
+        can_app_send_steering_wheel();
+        can_app_send_mde_clk_div = 0;
+    }
 }
 
 inline void can_app_send_state(void)
@@ -154,7 +161,7 @@ inline void can_app_send_motor(void)
     msg.length                              = CAN_MSG_MIC19_MOTOR_LENGTH;
     msg.flags.rtr = 0;
 
-    average_potentiometers();
+    average_motor_potentiometers();
 
     msg.data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE]
           = CAN_SIGNATURE_SELF;
@@ -174,6 +181,22 @@ inline void can_app_send_motor(void)
 
 }
 
+inline void can_app_send_steering_wheel(void)
+{
+    can_t msg;
+    msg.id                                  = CAN_MSG_MIC19_MOTOR_ID;
+    msg.length                              = CAN_MSG_MIC19_MOTOR_LENGTH;
+    msg.flags.rtr = 0;
+
+    average_motor_potentiometers();
+
+    msg.data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE]  = CAN_SIGNATURE_SELF;
+    msg.data[CAN_MSG_MIC19_MDE_POSITION_BYTE]       = control.mde_steering_wheel_position.avg;
+
+    can_send_message(&msg);
+
+}
+
 inline void can_app_send_boat(void)
 {
     can_t msg;
@@ -181,7 +204,7 @@ inline void can_app_send_boat(void)
     msg.length                              = CAN_MSG_MIC19_MCS_LENGTH;
     msg.flags.rtr = 0;
 
-    average_potentiometers();
+    average_motor_potentiometers();
 
     msg.data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE]                = CAN_SIGNATURE_SELF;
     if(system_flags.boat_on){

@@ -84,6 +84,7 @@ typedef struct control
     sub_control_t motor_PWM_target;
     sub_control_t motor_RAMP_target;
     sub_control_t MCC_POWER_target;
+    sub_control_t mde_steering_wheel_position;
 }control_t;
 
 
@@ -124,7 +125,9 @@ void read_boat_on(void);
 void read_pump_switches(void);
 void reset_switches(void);
 void acumulate_potentiometers(void);
-void average_potentiometers(void);
+void average_motor_potentiometers(void);
+void average_mcc_potentiometers(void);
+void average_mde_potentiometers(void);
 
 void buzzer(uint8_t buzzer_frequency, uint8_t buzzer_rhythm_on, uint8_t buzzer_rhythm_off);
 

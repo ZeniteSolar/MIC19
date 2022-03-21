@@ -279,8 +279,6 @@ inline void buzzer(uint8_t buzzer_frequency, uint8_t buzzer_rhythm_on, uint8_t b
 
 }
 
-
-
 inline void acumulate_potentiometers(void)
 {
 
@@ -297,27 +295,37 @@ inline void acumulate_potentiometers(void)
     else    VERBOSE_MSG_MACHINE(usart_send_string("ADC_AVG_VARIABLE_OVERFLOW_PROTECTION"));
 
     if(control.MCC_POWER_target.samples <= ADC_AVG_VARIABLE_OVERFLOW_PROTECTION){     //variable overflow protection (2^32)/255 = 16843009
-    control.MCC_POWER_target.sum += adc.channel[MCC_POWER_POT].avg;
+    control.MCC_POWER_target.sum += 0;
     control.MCC_POWER_target.samples ++;
+    }
+    else    VERBOSE_MSG_MACHINE(usart_send_string("ADC_AVG_VARIABLE_OVERFLOW_PROTECTION"));
+
+    if(control.mde_steering_wheel_position.samples <= ADC_AVG_VARIABLE_OVERFLOW_PROTECTION){     //variable overflow protection (2^32)/255 = 16843009
+    control.mde_steering_wheel_position.sum += adc.channel[MDE_POSITION_POT].avg;
+    control.mde_steering_wheel_position.samples ++;
     }
     else    VERBOSE_MSG_MACHINE(usart_send_string("ADC_AVG_VARIABLE_OVERFLOW_PROTECTION"));
 }
 
-inline void average_potentiometers(void)
+inline void average_motor_potentiometers(void)
 {
-    control.motor_PWM_target.avg =
-    control.motor_PWM_target.sum / control.motor_PWM_target.samples;
+    control.motor_PWM_target.avg = control.motor_PWM_target.sum / control.motor_PWM_target.samples;
     control.motor_PWM_target.sum = control.motor_PWM_target.samples = 0;
 
-    control.motor_RAMP_target.avg =
-    control.motor_RAMP_target.sum / control.motor_RAMP_target.samples;
+    control.motor_RAMP_target.avg = control.motor_RAMP_target.sum / control.motor_RAMP_target.samples;
     control.motor_RAMP_target.sum = control.motor_RAMP_target.samples = 0;
+}
 
-    control.MCC_POWER_target.avg =
-    control.MCC_POWER_target.sum / control.MCC_POWER_target.samples;
+inline void average_mcc_potentiometers(void)
+{
+    control.MCC_POWER_target.avg = control.MCC_POWER_target.sum / control.MCC_POWER_target.samples;
     control.MCC_POWER_target.sum = control.MCC_POWER_target.samples = 0;
+}
 
-
+inline void average_mde_potentiometers(void)
+{
+    control.mde_steering_wheel_position.avg = control.mde_steering_wheel_position.sum / control.mde_steering_wheel_position.samples;
+    control.mde_steering_wheel_position.sum = control.mde_steering_wheel_position.samples = 0;
 }
 
 inline void read_boat_on(void)
@@ -548,6 +556,8 @@ void print_infos(void)
             break;
     }
 }
+
+
 
 
 

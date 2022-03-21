@@ -1,7 +1,7 @@
 /**
  * @file conf.h
  *
- * @defgroup CONF Configurations 
+ * @defgroup CONF Configurations
  *
  * @brief General configuration of the system.
  *
@@ -37,7 +37,7 @@
 #define LED_ON
 #define BUZZER_ON
 #define WATCHDOG_ON
-#define SLEEP_ON	
+#define SLEEP_ON
 #define CHECK_MCS_ON
 
 //PINS UPDATE FILTER CONFIGURATION
@@ -122,7 +122,8 @@
 
 #define 	MOTOR_PWM_POT			ADC0
 #define  	MOTOR_RAMP_POT			ADC1
-#define 	MCC_POWER_POT			ADC2
+#define 	MDE_POSITION_POT		ADC2
+// #define 	MCC_POWER_POT			<Not used, it was replaced by MDE_POSITION_POT>
 
 #ifdef LED_ON
 #define     LED_PORT                PORTD
@@ -133,9 +134,9 @@
 #define     set_led(y)              set_bit(LED_PORT, y)
 #define     clr_led(y)              clr_bit(LED_PORT, y)
 #else
-#define     cpl_led()               
-#define     set_led()               
-#define     clr_led()               
+#define     cpl_led()
+#define     set_led()
+#define     clr_led()
 #endif // LED_ON
 
 #ifdef BUZZER_ON
@@ -152,6 +153,7 @@
 #define SPI_ON
 #define CAN_APP_SEND_STATE_FREQ     40//36000     //<! state msg frequency in Hz
 #define CAN_APP_SEND_MOTOR_FREQ     0//36000     //<! motor msg frequency in Hz
+#define CAN_APP_SEND_MDE_FREQ     0//36000     //<! motor msg frequency in Hz
 #define CAN_APP_SEND_BOAT_FREQ      0//36000     //<! motor msg frequency in Hz
 #define CAN_APP_SEND_PUMPS_FREQ     4//36000     //<! motor msg frequency in Hz
 
