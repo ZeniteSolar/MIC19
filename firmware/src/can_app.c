@@ -123,14 +123,14 @@ inline void can_app_task(void)
     }
 
 
-    if(can_app_send_pumps_clk_div++ >= CAN_APP_SEND_BOAT_CLK_DIV){
+    if(can_app_send_pumps_clk_div++ >= CAN_APP_SEND_PUMPS_CLK_DIV){
         VERBOSE_MSG_CAN_APP(usart_send_string("pumps msg was sent.\n"));
         can_app_send_pumps();
         can_app_send_pumps_clk_div = 0;
     }
 
 
-    if(can_app_send_mde_clk_div++ >= CAN_APP_SEND_BOAT_CLK_DIV){
+    if(can_app_send_mde_clk_div++ >= CAN_APP_SEND_MDE_CLK_DIV){
         VERBOSE_MSG_CAN_APP(usart_send_string("steering wheel msg was sent.\n"));
         can_app_send_steering_wheel();
         can_app_send_mde_clk_div = 0;
@@ -184,8 +184,8 @@ inline void can_app_send_motor(void)
 inline void can_app_send_steering_wheel(void)
 {
     can_t msg;
-    msg.id                                  = CAN_MSG_MIC19_MOTOR_ID;
-    msg.length                              = CAN_MSG_MIC19_MOTOR_LENGTH;
+    msg.id                                  = CAN_MSG_MIC19_MDE_ID;
+    msg.length                              = CAN_MSG_MIC19_MDE_LENGTH;
     msg.flags.rtr = 0;
 
     average_motor_potentiometers();
