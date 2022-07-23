@@ -190,9 +190,9 @@ inline void can_app_send_steering_wheel(void)
 
     average_motor_potentiometers();
 
-    msg.data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE]  = CAN_SIGNATURE_SELF;
-    msg.data[CAN_MSG_MIC19_MDE_POSITION_BYTE]       = control.mde_steering_wheel_position.avg;
-
+    msg.data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE]      = CAN_SIGNATURE_SELF;
+    msg.data[CAN_MSG_MIC19_MDE_POSITION_L_BYTE]         = LOW(control.mde_steering_wheel_position.avg);
+    msg.data[CAN_MSG_MIC19_MDE_POSITION_H_BYTE]         = HIGH(control.mde_steering_wheel_position.avg);
     can_send_message(&msg);
 
 }
