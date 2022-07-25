@@ -188,7 +188,7 @@ inline void can_app_send_steering_wheel(void)
     msg.length                              = CAN_MSG_MIC19_MDE_LENGTH;
     msg.flags.rtr = 0;
 
-    average_motor_potentiometers();
+    average_mde_potentiometers();
 
     msg.data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE]      = CAN_SIGNATURE_SELF;
     msg.data[CAN_MSG_MIC19_MDE_POSITION_L_BYTE]         = LOW(control.mde_steering_wheel_position.avg);
