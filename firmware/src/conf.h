@@ -38,7 +38,7 @@
 #define BUZZER_ON
 #define WATCHDOG_ON
 #define SLEEP_ON
-#define CHECK_MCS_ON
+//#define CHECK_MCS_ON
 
 //PINS UPDATE FILTER CONFIGURATION
 #define BOAT_ON_TO_UPDATE 10
@@ -49,7 +49,7 @@
 
 
 #ifdef ADC_ON
-#define ADC_8BITS
+//#define ADC_8BITS
 // ADC CONFIGURATION
 // note that changing ADC_FREQUENCY may cause problems with avg_sum_samples
 #define ADC_FREQUENCY                       10000 // 20000
@@ -59,8 +59,8 @@
 
 #define ADC_AVG_VARIABLE_OVERFLOW_PROTECTION 4294967296/255 //32bit variable/8bit variable(maximum value of adc)
 
-#define POTENTIOMETER_LOW_TRIGGER 15
-#define POTENTIOMETER_HIGH_TRIGGER 240
+//#define POTENTIOMETER_LOW_TRIGGER 2
+//#define POTENTIOMETER_HIGH_TRIGGER 2
 
 
 
@@ -153,9 +153,9 @@
 #define SPI_ON
 #define CAN_APP_SEND_STATE_FREQ     40//36000     //<! state msg frequency in Hz
 #define CAN_APP_SEND_MOTOR_FREQ     0//36000     //<! motor msg frequency in Hz
-#define CAN_APP_SEND_MDE_FREQ     0//36000     //<! motor msg frequency in Hz
+#define CAN_APP_SEND_MDE_FREQ     4//36000     //<! motor msg frequency in Hz
 #define CAN_APP_SEND_BOAT_FREQ      0//36000     //<! motor msg frequency in Hz
-#define CAN_APP_SEND_PUMPS_FREQ     4//36000     //<! motor msg frequency in Hz
+#define CAN_APP_SEND_PUMPS_FREQ     0//36000     //<! motor msg frequency in Hz
 
 
 
