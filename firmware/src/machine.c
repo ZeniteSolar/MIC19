@@ -324,7 +324,7 @@ inline void average_mcc_potentiometers(void)
 
 inline void average_mde_potentiometers(void)
 {
-    control.mde_steering_wheel_position.avg = control.mde_steering_wheel_position.sum / control.mde_steering_wheel_position.samples;
+    control.mde_steering_wheel_position.avg = 0.2667093856971853 * control.mde_steering_wheel_position.sum / control.mde_steering_wheel_position.samples;
     control.mde_steering_wheel_position.sum = control.mde_steering_wheel_position.samples = 0;
 }
 
