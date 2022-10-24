@@ -18,8 +18,8 @@
 // CONFIGURACOES DE COMPILACAO
 #define DEBUG_ON
 #define VERBOSE_ON
-#define VERBOSE_ON_CAN_APP
-#define VERBOSE_ON_MACHINE
+//#define VERBOSE_ON_CAN_APP
+//#define VERBOSE_ON_MACHINE
 //#define VERBOSE_ON_ADC
 #define VERBOSE_ON_INIT
 #define VERBOSE_ON_ERROR
@@ -49,7 +49,7 @@
 
 
 #ifdef ADC_ON
-//#define ADC_8BITS
+#define ADC_8BITS
 // ADC CONFIGURATION
 // note that changing ADC_FREQUENCY may cause problems with avg_sum_samples
 #define ADC_FREQUENCY                       10000 // 20000
