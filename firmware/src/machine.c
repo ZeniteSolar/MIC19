@@ -185,6 +185,7 @@ inline void task_initializing(void)
  */
 inline void task_idle(void)
 {
+
 #ifdef LED_ON
     if(led_clk_div++ >= 30){
         cpl_led(LED1);
@@ -202,7 +203,8 @@ inline void task_idle(void)
 
     read_pump_switches();
 
-
+    acumulate_potentiometers();
+    
 #ifdef CHECK_MCS_ON
     if(system_flags.MCS_on && system_flags.boat_on)
         set_state_running();
@@ -324,7 +326,7 @@ inline void average_mcc_potentiometers(void)
 
 inline void average_mde_potentiometers(void)
 {
-    control.mde_steering_wheel_position.avg = 0.2647482872729412 * control.mde_steering_wheel_position.sum / control.mde_steering_wheel_position.samples;
+    control.mde_steering_wheel_position.avg = 0.2510205983032331 * control.mde_steering_wheel_position.sum / control.mde_steering_wheel_position.samples;
     control.mde_steering_wheel_position.sum = control.mde_steering_wheel_position.samples = 0;
 }
 
