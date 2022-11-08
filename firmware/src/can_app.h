@@ -27,20 +27,20 @@ void can_app_send_pumps(void);
 void can_app_send_steering_wheel(void);
 void can_app_extractor_mcs_relay(can_t *msg);
 void can_app_msg_extractors_switch(can_t *msg);
-//void can_app_extractor_mic17_state(can_t *msg);
-//void can_app_extractor_mic17_mcs(can_t *msg);
+// void can_app_extractor_mic17_state(can_t *msg);
+// void can_app_extractor_mic17_mcs(can_t *msg);
 void check_can(void);
 
 #ifdef CAN_ON
-#define CAN_APP_SEND_STATE_CLK_DIV  CAN_APP_SEND_STATE_FREQ
-#define CAN_APP_SEND_MOTOR_CLK_DIV  CAN_APP_SEND_MOTOR_FREQ
-#define CAN_APP_SEND_MDE_CLK_DIV  CAN_APP_SEND_MDE_FREQ
-#define CAN_APP_SEND_BOAT_CLK_DIV  CAN_APP_SEND_BOAT_FREQ
-#define CAN_APP_SEND_PUMPS_CLK_DIV  CAN_APP_SEND_PUMPS_FREQ
-#define CAN_APP_SEND_ADC_CLK_DIV    CAN_APP_SEND_ADC_FREQ
+#define CAN_APP_SEND_STATE_CLK_DIV (MACHINE_TIMER_FREQUENCY / CAN_APP_SEND_STATE_FREQ)
+#define CAN_APP_SEND_MOTOR_CLK_DIV (MACHINE_TIMER_FREQUENCY / CAN_APP_SEND_MOTOR_FREQ)
+#define CAN_APP_SEND_MDE_CLK_DIV (MACHINE_TIMER_FREQUENCY / CAN_APP_SEND_MDE_FREQ)
+#define CAN_APP_SEND_BOAT_CLK_DIV (MACHINE_TIMER_FREQUENCY / CAN_APP_SEND_BOAT_FREQ)
+#define CAN_APP_SEND_PUMPS_CLK_DIV (MACHINE_TIMER_FREQUENCY / CAN_APP_SEND_PUMPS_FREQ)
+#define CAN_APP_SEND_ADC_CLK_DIV (MACHINE_TIMER_FREQUENCY / CAN_APP_SEND_ADC_FREQ)
 #else
-#define CAN_APP_SEND_STATE_CLK_DIV  1
-#define CAN_APP_SEND_ADC_CLK_DIV    1
+#define CAN_APP_SEND_STATE_CLK_DIV 1
+#define CAN_APP_SEND_ADC_CLK_DIV 1
 #endif
 
 extern uint32_t can_app_send_state_clk_div;
