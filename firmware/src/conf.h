@@ -35,7 +35,7 @@
 #define LED_ON
 #define BUZZER_ON
 #define WATCHDOG_ON
-#define SLEEP_ON
+//#define SLEEP_ON
 //#define CHECK_MCS_ON
 
 // PINS UPDATE FILTER CONFIGURATION
@@ -48,8 +48,8 @@
 #define ADC_8BITS
 // ADC CONFIGURATION
 // note that changing ADC_FREQUENCY may cause problems with avg_sum_samples
-#define ADC_FREQUENCY 10000 // 20000
-#define ADC_TIMER_PRESCALER 8
+#define ADC_FREQUENCY 1000U // 20000
+#define ADC_TIMER_PRESCALER 64UL
 #define ADC_AVG_SIZE_2 7    // in base 2
 #define ADC_AVG_SIZE_10 128 // in base 10
 
@@ -67,8 +67,8 @@
 
 #ifdef MACHINE_ON
 // The machine frequency may not be superior of ADC_FREQUENCY/ADC_AVG_SIZE_10
-#define MACHINE_TIMER_FREQUENCY 120  //<! machine timer frequency in Hz
-#define MACHINE_TIMER_PRESCALER 1024 //<! machine timer prescaler
+#define MACHINE_TIMER_FREQUENCY 120UL  //<! machine timer frequency in Hz
+#define MACHINE_TIMER_PRESCALER 1024UL //<! machine timer prescaler
 #define MACHINE_FREQUENCY MACHINE_TIMER_FREQUENCY
 
 // SCALE TO CONVERT ADC DEFINITIONS
