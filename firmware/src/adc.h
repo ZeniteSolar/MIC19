@@ -36,17 +36,17 @@ typedef struct{
     uint32_t sum;
     uint16_t avg;
     uint16_t samples;
-} adc_channel_t;
+} avg_t;
 
-typedef struct adc{
-    adc_channel_t channel[ADC_LAST_CHANNEL+1];
-    adc_channels_t select;
-    uint8_t ready;
-} adc_t;
 
-extern volatile adc_t adc;
-
-uint8_t adc_select_channel(adc_channels_t __ch);
 void adc_init(void);
+
+/**
+ * @brief 
+ * 
+ * @param channel 
+ * @return uint16_t 
+ */
+uint16_t adc_get_measurement_avg(adc_channels_t channel);
 
 #endif /* ifndef _ADC_H_ */

@@ -2,6 +2,7 @@
 
 #include "main.h"
 
+
 void init(void)
 {
 
@@ -74,7 +75,7 @@ void init(void)
 
  	#ifdef MACHINE_ON
         VERBOSE_MSG_INIT(usart_send_string("MACHINE..."));
-		machine_init();
+		//machine_init();
         VERBOSE_MSG_INIT(usart_send_string(" OK!\n"));
     #else
         VERBOSE_MSG_INIT(usart_send_string("MACHINE... OFF!\n"));
@@ -117,8 +118,8 @@ EXAMPLE OF PIN INIT
 */
 
     VERBOSE_MSG_INIT(usart_send_string("IOs... "));
-    clr_bit(CTRL_SWITCHES_DDR, BOAT_ON_SWITCH);     //Como entrada
-    set_bit(CTRL_SWITCHES_PORT, BOAT_ON_SWITCH);    //Ativa o pull-up
+    // clr_bit(CTRL_SWITCHES_DDR, BOAT_ON_SWITCH);     //Como entrada
+    // set_bit(CTRL_SWITCHES_PORT, BOAT_ON_SWITCH);    //Ativa o pull-up
     clr_bit(CTRL_SWITCHES_DDR, MOTOR_ON_SWITCH);    //Como entrada
     set_bit(CTRL_SWITCHES_PORT,MOTOR_ON_SWITCH);    //Ativa o pull-up        
     clr_bit(CTRL_SWITCHES_DDR, MCC_ON_SWITCH);      //Como entrada

@@ -262,12 +262,12 @@ inline void buzzer(uint8_t buzzer_frequency, uint8_t buzzer_rhythm_on, uint8_t b
         if (++buzzer_frequency_clk_div >= buzzer_frequency)
         {
             buzzer_frequency_clk_div = 0;
-            cpl_buzzer();
+            //cpl_buzzer();
         }
     }
     else
     {
-        clr_buzzer();
+        //clr_buzzer();
         if (buzzer_rhythm_clk_div >= buzzer_rhythm_off + buzzer_rhythm_on)
             buzzer_rhythm_clk_div = 0;
     }
