@@ -45,7 +45,7 @@
 #define EMERGENCY_ON_TO_UPDATE 10
 
 #ifdef ADC_ON
-#define ADC_8BITS
+//#define ADC_8BITS
 // ADC CONFIGURATION
 // note that changing ADC_FREQUENCY may cause problems with avg_sum_samples
 #define ADC_FREQUENCY 1000U // 20000
