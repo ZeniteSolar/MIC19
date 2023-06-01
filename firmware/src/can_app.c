@@ -166,10 +166,14 @@ inline void can_app_send_motor(void)
 
     average_motor_potentiometers();
 
-    msg.data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE]
-          = CAN_SIGNATURE_SELF;
-    msg.data[CAN_MSG_MIC19_MOTOR_D_BYTE]    = control.motor_PWM_target.avg;
-    msg.data[CAN_MSG_MIC19_MOTOR_I_BYTE]    = control.motor_RAMP_target.avg;
+	msg.data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] = CAN_SIGNATURE_SELF;
+#ifdef ADC_8BITS
+	msg.data[CAN_MSG_MIC19_MOTOR_D_BYTE] = control.motor_PWM_target;
+	msg.data[CAN_MSG_MIC19_MOTOR_I_BYTE] = control.motor_RAMP_target;
+#else
+	msg.data[CAN_MSG_MIC19_MOTOR_D_BYTE] = (uint8_t)(control.motor_PWM_target >> 2);
+	msg.data[CAN_MSG_MIC19_MOTOR_I_BYTE] = (uint8_t)(control.motor_RAMP_target >> 2);
+#endif
 
     msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] =
         ((system_flags.motor_on) << CAN_MSG_MIC19_MOTOR_MOTOR_MOTOR_ON_BIT);
@@ -192,11 +196,10 @@ inline void can_app_send_steering_wheel(void)
 
     average_mde_potentiometers();
 
-    msg.data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE]      = CAN_SIGNATURE_SELF;
-    msg.data[CAN_MSG_MIC19_MDE_POSITION_L_BYTE]         = LOW(control.mde_steering_wheel_position.avg);
-    msg.data[CAN_MSG_MIC19_MDE_POSITION_H_BYTE]         = HIGH(control.mde_steering_wheel_position.avg);
+	msg.data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] = CAN_SIGNATURE_SELF;
+	msg.data[CAN_MSG_MIC19_MDE_POSITION_L_BYTE] = LOW(control.mde_steering_wheel_position);
+	msg.data[CAN_MSG_MIC19_MDE_POSITION_H_BYTE] = HIGH(control.mde_steering_wheel_position);
     can_send_message(&msg);
-
 }
 
 inline void can_app_send_boat(void)
