@@ -142,11 +142,7 @@
 
 #ifdef CAN_ON
 #define SPI_ON
-#define CAN_APP_SEND_STATE_FREQ 5  //<! state msg frequency in Hz
-#define CAN_APP_SEND_MOTOR_FREQ 50 //<! motor msg frequency in Hz
-#define CAN_APP_SEND_MDE_FREQ 50   //<! motor msg frequency in Hz
-#define CAN_APP_SEND_BOAT_FREQ 50  //<! motor msg frequency in Hz
-#define CAN_APP_SEND_PUMPS_FREQ 4  //<! motor msg frequency in Hz
+
 
 // CANBUS DEFINITONS
 // ----------------------------------------------------------------------------
