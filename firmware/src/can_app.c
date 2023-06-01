@@ -82,7 +82,8 @@ inline void can_app_print_msg(can_t *msg)
     usart_send_uint16(msg->id);
     usart_send_string(". D: ");
 
-    for(uint8_t i = 0; i < msg->length; i++){
+	for (uint8_t i = 0; i < msg->length; i++)
+	{
       usart_send_uint16(msg->data[i]);
       usart_send_char(' ');
     }
@@ -103,34 +104,36 @@ inline void can_app_task(void)
 {
     check_can();
 
-    if(can_app_send_state_clk_div++ >= CAN_APP_SEND_STATE_CLK_DIV){
+	if (can_app_send_state_clk_div++ >= CAN_APP_SEND_STATE_CLK_DIV)
+	{
         VERBOSE_MSG_CAN_APP(usart_send_string("state msg was sent.\n"));
         can_app_send_state();
         can_app_send_state_clk_div = 0;
     }
 
-    if(can_app_send_motor_clk_div++ >= CAN_APP_SEND_MOTOR_CLK_DIV){
+	if (can_app_send_motor_clk_div++ >= CAN_APP_SEND_MOTOR_CLK_DIV)
+	{
         VERBOSE_MSG_CAN_APP(usart_send_string("motor msg was sent.\n"));
         can_app_send_motor();
         can_app_send_motor_clk_div = 0;
     }
 
-
-    if(can_app_send_boat_clk_div++ >= CAN_APP_SEND_BOAT_CLK_DIV){
+	if (can_app_send_boat_clk_div++ >= CAN_APP_SEND_BOAT_CLK_DIV)
+	{
         VERBOSE_MSG_CAN_APP(usart_send_string("boat msg was sent.\n"));
         can_app_send_boat();
         can_app_send_boat_clk_div = 0;
     }
 
-
-    if(can_app_send_pumps_clk_div++ >= CAN_APP_SEND_PUMPS_CLK_DIV){
+	if (can_app_send_pumps_clk_div++ >= CAN_APP_SEND_PUMPS_CLK_DIV)
+	{
         VERBOSE_MSG_CAN_APP(usart_send_string("pumps msg was sent.\n"));
         can_app_send_pumps();
         can_app_send_pumps_clk_div = 0;
     }
 
-
-    if(can_app_send_mde_clk_div++ >= CAN_APP_SEND_MDE_CLK_DIV){
+	if (can_app_send_mde_clk_div++ >= CAN_APP_SEND_MDE_CLK_DIV)
+	{
         VERBOSE_MSG_CAN_APP(usart_send_string("steering wheel msg was sent.\n"));
         can_app_send_steering_wheel();
         can_app_send_mde_clk_div = 0;
@@ -140,13 +143,13 @@ inline void can_app_task(void)
 inline void can_app_send_state(void)
 {
     can_t msg;
-    msg.id                                  = CAN_MSG_MIC19_STATE_ID;
-    msg.length                              = CAN_MSG_GENERIC_STATE_LENGTH;
+	msg.id = CAN_MSG_MIC19_STATE_ID;
+	msg.length = CAN_MSG_GENERIC_STATE_LENGTH;
     msg.flags.rtr = 0;
 
-    msg.data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE]            = CAN_SIGNATURE_SELF;
-    msg.data[CAN_MSG_GENERIC_STATE_STATE_BYTE]      = (uint8_t) state_machine;
-    msg.data[CAN_MSG_GENERIC_STATE_ERROR_BYTE]      = error_flags.all;
+	msg.data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] = CAN_SIGNATURE_SELF;
+	msg.data[CAN_MSG_GENERIC_STATE_STATE_BYTE] = (uint8_t)state_machine;
+	msg.data[CAN_MSG_GENERIC_STATE_ERROR_BYTE] = error_flags.all;
 
     can_send_message(&msg);
 
@@ -157,8 +160,8 @@ inline void can_app_send_state(void)
 inline void can_app_send_motor(void)
 {
     can_t msg;
-    msg.id                                  = CAN_MSG_MIC19_MOTOR_ID;
-    msg.length                              = CAN_MSG_MIC19_MOTOR_LENGTH;
+	msg.id = CAN_MSG_MIC19_MOTOR_ID;
+	msg.length = CAN_MSG_MIC19_MOTOR_LENGTH;
     msg.flags.rtr = 0;
 
     average_motor_potentiometers();
@@ -178,14 +181,13 @@ inline void can_app_send_motor(void)
         ((system_flags.reverse) << CAN_MSG_MIC19_MOTOR_MOTOR_REVERSE_BIT);
 
     can_send_message(&msg);
-
 }
 
 inline void can_app_send_steering_wheel(void)
 {
     can_t msg;
-    msg.id                                  = CAN_MSG_MIC19_MDE_ID;
-    msg.length                              = CAN_MSG_MIC19_MDE_LENGTH;
+	msg.id = CAN_MSG_MIC19_MDE_ID;
+	msg.length = CAN_MSG_MIC19_MDE_LENGTH;
     msg.flags.rtr = 0;
 
     average_mde_potentiometers();
@@ -200,33 +202,34 @@ inline void can_app_send_steering_wheel(void)
 inline void can_app_send_boat(void)
 {
     can_t msg;
-    msg.id                                  = CAN_MSG_MIC19_MCS_ID;
-    msg.length                              = CAN_MSG_MIC19_MCS_LENGTH;
+	msg.id = CAN_MSG_MIC19_MCS_ID;
+	msg.length = CAN_MSG_MIC19_MCS_LENGTH;
     msg.flags.rtr = 0;
 
     average_motor_potentiometers();
 
-    msg.data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE]                = CAN_SIGNATURE_SELF;
-    if(system_flags.boat_on){
+	msg.data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] = CAN_SIGNATURE_SELF;
+	if (system_flags.boat_on)
+	{
         msg.data[CAN_MSG_MIC19_MCS_BOAT_ON_BYTE] = 0xFF;
-    }else{
+	}
+	else
+	{
         msg.data[CAN_MSG_MIC19_MCS_BOAT_ON_BYTE] = 0x00;
     }
 
     can_send_message(&msg);
-
 }
 
 inline void can_app_send_pumps(void)
 {
 
     can_t msg;
-    msg.id                                  = CAN_MSG_MIC19_PUMPS_ID;
-    msg.length                              = CAN_MSG_MIC19_PUMPS_LENGTH;
+	msg.id = CAN_MSG_MIC19_PUMPS_ID;
+	msg.length = CAN_MSG_MIC19_PUMPS_LENGTH;
     msg.flags.rtr = 0;
 
-
-    msg.data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE]                = CAN_SIGNATURE_SELF;
+	msg.data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] = CAN_SIGNATURE_SELF;
 
     msg.data[CAN_MSG_MIC19_PUMPS_PUMPS_BYTE] = 0x00;
 
@@ -237,25 +240,27 @@ inline void can_app_send_pumps(void)
     (pump_flags.pump2_on) << (CAN_MSG_MIC19_PUMPS_PUMPS_PUMP2_BIT);
 
     can_send_message(&msg);
-
 }
 
 inline void can_app_extractor_mcs_relay(can_t *msg)
 {
-    if(msg->data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] == CAN_SIGNATURE_MCS19){
+	if (msg->data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] == CAN_SIGNATURE_MCS19)
+	{
 
         // can_app_checks_without_mic17_msg = 0;
 
-        if(msg->data[CAN_MSG_MCS19_START_STAGES_MAIN_RELAY_BYTE] == 0xFF){
+		if (msg->data[CAN_MSG_MCS19_START_STAGES_MAIN_RELAY_BYTE] == 0xFF)
+		{
             system_flags.MCS_on = 1;
-        }else if(msg->data[CAN_MSG_MCS19_START_STAGES_MAIN_RELAY_BYTE] == 0x00){
+		}
+		else if (msg->data[CAN_MSG_MCS19_START_STAGES_MAIN_RELAY_BYTE] == 0x00)
+		{
             system_flags.MCS_on = 0;
         }
 
         VERBOSE_MSG_CAN_APP(usart_send_string("boat on bit: "));
         VERBOSE_MSG_CAN_APP(usart_send_uint16(system_flags.boat_on));
         VERBOSE_MSG_CAN_APP(usart_send_char('\n'));
-
     }
 }
 
@@ -265,9 +270,11 @@ inline void can_app_extractor_mcs_relay(can_t *msg)
  */
 inline void can_app_msg_extractors_switch(can_t *msg)
 {
-    if(msg->data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] == CAN_SIGNATURE_MCS19){
+	if (msg->data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] == CAN_SIGNATURE_MCS19)
+	{
 
-        switch(msg->id){
+		switch (msg->id)
+		{
 
             case CAN_MSG_MCS19_START_STAGES_ID:
                 VERBOSE_MSG_CAN_APP(usart_send_string("got a mcs msg: "));
@@ -289,9 +296,11 @@ inline void can_app_msg_extractors_switch(can_t *msg)
 inline void check_can(void)
 {
 
-    if(can_check_message()){
+	if (can_check_message())
+	{
         can_t msg;
-        if(can_get_message(&msg)){
+		if (can_get_message(&msg))
+		{
             can_app_msg_extractors_switch(&msg);
         }
     }
