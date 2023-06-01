@@ -81,10 +81,10 @@ typedef struct{
 
 typedef struct control
 {
-    sub_control_t motor_PWM_target;
-    sub_control_t motor_RAMP_target;
-    sub_control_t MCC_POWER_target;
-    sub_control_t mde_steering_wheel_position;
+    uint16_t motor_PWM_target;
+    uint16_t motor_RAMP_target;
+    uint16_t MCC_POWER_target;
+    uint16_t mde_steering_wheel_position;
 }control_t;
 
 
