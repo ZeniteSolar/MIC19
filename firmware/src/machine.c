@@ -13,7 +13,6 @@ volatile uint8_t machine_clk_divider;
 volatile uint8_t total_errors; // Contagem de ERROS
 volatile uint16_t charge_count_error;
 volatile uint8_t reset_clk;
-volatile uint32_t machine_tick = 0;
 
 volatile uint8_t led_clk_div;
 
@@ -55,7 +54,6 @@ void machine_init(void)
 
 	set_machine_initial_state();
 	set_state_initializing();
-
 }
 
 /**
@@ -139,53 +137,53 @@ inline void print_system_flags(void)
 	switch (count++)
 	{
 	case 0:
-			usart_send_string("B:");
-			usart_send_char('0' + system_flags.boat_on);
+		usart_send_string("B:");
+		usart_send_char('0' + system_flags.boat_on);
 		break;
 	case 1:
-			usart_send_string(",B_s:");
-			usart_send_char('0' + system_flags.boat_switch_on);
+		usart_send_string(",B_s:");
+		usart_send_char('0' + system_flags.boat_switch_on);
 		break;
 	case 2:
-			usart_send_string(",MAM:");
-			usart_send_char('0' + system_flags.motor_on);
+		usart_send_string(",MAM:");
+		usart_send_char('0' + system_flags.motor_on);
 		break;
 	case 3:
-			usart_send_string(",MCS:");
-			usart_send_char('0' + system_flags.MCS_on);
+		usart_send_string(",MCS:");
+		usart_send_char('0' + system_flags.MCS_on);
 		break;
 	case 4:
-			usart_send_string(",MCC:");
-			usart_send_char('0' + system_flags.MCC_on);
+		usart_send_string(",MCC:");
+		usart_send_char('0' + system_flags.MCC_on);
 		break;
 	case 5:
-			usart_send_string(",DMS:");
-			usart_send_char('0' + system_flags.dead_men_switch);
+		usart_send_string(",DMS:");
+		usart_send_char('0' + system_flags.dead_men_switch);
 		break;
 	case 6:
-			usart_send_string(",emer:");
-			usart_send_char('0' + system_flags.emergency);
+		usart_send_string(",emer:");
+		usart_send_char('0' + system_flags.emergency);
 		break;
 	case 7:
-			usart_send_string(",re:");
-			usart_send_char('0' + system_flags.reverse);
+		usart_send_string(",re:");
+		usart_send_char('0' + system_flags.reverse);
 		break;
 	case 8:
-			usart_send_string("V: ");
-			usart_send_uint16(control.motor_PWM_target);
+		usart_send_string("V: ");
+		usart_send_uint16(control.motor_PWM_target);
 		break;
 	case 9:
-			usart_send_string("|A: ");
-			usart_send_uint16(control.motor_RAMP_target);
+		usart_send_string("|A: ");
+		usart_send_uint16(control.motor_RAMP_target);
 		break;
 	case 10:
-			usart_send_string("|D: ");
-			usart_send_uint16(control.mde_steering_wheel_position);
+		usart_send_string("|D: ");
+		usart_send_uint16(control.mde_steering_wheel_position);
 		break;
-	
+
 	default:
-			usart_send_char('\n');
-			count = 0;
+		usart_send_char('\n');
+		count = 0;
 		break;
 	}
 }
@@ -218,7 +216,6 @@ inline void task_initializing(void)
 inline void task_idle(void)
 {
 
-	
 #ifdef LED_ON
 	if (led_clk_div++ >= 30)
 	{
@@ -257,9 +254,6 @@ inline void task_running(void)
 	read_switches();
 
 	read_pump_switches();
-
-
-
 
 #ifdef LED_ON
 	if (led_clk_div++ >= 2)
@@ -467,7 +461,6 @@ inline void read_switches(void)
 		system_flags.MCC_on = 1;
 	else
 		system_flags.MCC_on = 0;
-
 }
 
 /**
@@ -560,47 +553,47 @@ void print_infos(void)
  * @brief this is the machine state itself.
  */
 inline void machine_run(void)
-{  
+{
 	// print_infos();
 	// print_system_flags();
 	if (machine_clk)
 	{
 		machine_clk = 0;
 
-			if (error_flags.all)
-			{
-				print_system_flags();
-				print_error_flags();
-				print_infos();
-				set_state_error();
-			}
+		if (error_flags.all)
+		{
+			print_system_flags();
+			print_error_flags();
+			print_infos();
+			set_state_error();
+		}
 
-			switch (state_machine)
-			{
-			case STATE_INITIALIZING:
-				task_initializing();
+		switch (state_machine)
+		{
+		case STATE_INITIALIZING:
+			task_initializing();
 
-				break;
-			case STATE_IDLE:
-				task_idle();
+			break;
+		case STATE_IDLE:
+			task_idle();
 #ifdef CAN_ON
-				can_app_task();
+			can_app_task();
 #endif /* CAN_ON */
-				break;
-			case STATE_RUNNING:
-				task_running();
+			break;
+		case STATE_RUNNING:
+			task_running();
 #ifdef CAN_ON
-				can_app_task();
+			can_app_task();
 #endif /* CAN_ON */
 
-				break;
-			case STATE_ERROR:
-				task_error();
+			break;
+		case STATE_ERROR:
+			task_error();
 
-			case STATE_RESET:
-			default:
-				task_reset();
-				break;
+		case STATE_RESET:
+		default:
+			task_reset();
+			break;
 		}
 		print_system_flags();
 	}
