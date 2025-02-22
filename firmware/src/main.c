@@ -2,6 +2,7 @@
 
 #include "main.h"
 
+
 void init(void)
 {
 
@@ -119,6 +120,8 @@ EXAMPLE OF PIN INIT
     VERBOSE_MSG_INIT(usart_send_string("IOs... "));
     clr_bit(CTRL_SWITCHES_DDR, BOAT_ON_SWITCH);     //Como entrada
     set_bit(CTRL_SWITCHES_PORT, BOAT_ON_SWITCH);    //Ativa o pull-up
+	clr_bit(CTRL_SWITCHES_DDR, EMERGENCY_SWITCH);     //Como entrada
+    set_bit(CTRL_SWITCHES_PORT, EMERGENCY_SWITCH);    //Ativa o pull
     clr_bit(CTRL_SWITCHES_DDR, MOTOR_ON_SWITCH);    //Como entrada
     set_bit(CTRL_SWITCHES_PORT,MOTOR_ON_SWITCH);    //Ativa o pull-up        
     clr_bit(CTRL_SWITCHES_DDR, MCC_ON_SWITCH);      //Como entrada

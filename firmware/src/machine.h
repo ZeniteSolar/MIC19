@@ -19,7 +19,7 @@
 
 // Equations for mode 2 (CTC with TOP OCR2A)
 // Note the resolution. For example.. at 150hz, ICR1 = PWM_TOP = 159, so it
-#define MACHINE_TIMER_TOP ((F_CPU/(2*MACHINE_TIMER_PRESCALER))/(MACHINE_TIMER_FREQUENCY) -1)
+#define MACHINE_TIMER_TOP (uint8_t)(((F_CPU) / ((MACHINE_TIMER_PRESCALER) * (MACHINE_TIMER_FREQUENCY))) - 1)
 
 #ifdef ADC_ON
 #include "adc.h"
@@ -81,9 +81,10 @@ typedef struct{
 
 typedef struct control
 {
-    sub_control_t motor_PWM_target;
-    sub_control_t motor_RAMP_target;
-    sub_control_t MCC_POWER_target;
+    uint16_t motor_PWM_target;
+    uint16_t motor_RAMP_target;
+    uint16_t MCC_POWER_target;
+    uint16_t mde_steering_wheel_position;
 }control_t;
 
 
@@ -124,7 +125,9 @@ void read_boat_on(void);
 void read_pump_switches(void);
 void reset_switches(void);
 void acumulate_potentiometers(void);
-void average_potentiometers(void);
+void average_motor_potentiometers(void);
+void average_mcc_potentiometers(void);
+void average_mde_potentiometers(void);
 
 void buzzer(uint8_t buzzer_frequency, uint8_t buzzer_rhythm_on, uint8_t buzzer_rhythm_off);
 

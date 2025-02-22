@@ -17,7 +17,7 @@ _autosave-*
 *-rescue.lib
 *-save.pro
 *-save.kicad_pcb
-
+*.zip
 # Netlist files (exported from Eeschema)
 *.net
 
@@ -33,7 +33,6 @@ _autosave-*
 escue-backup/
 
 *.tsv
-bom/
 
 # Gerber export output
 out/
