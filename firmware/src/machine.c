@@ -3,6 +3,7 @@
 volatile state_machine_t state_machine;
 volatile control_t control;
 volatile pump_flags_t pump_flags;
+volatile mna_flags_t mna_flags;
 volatile system_flags_t system_flags;
 volatile error_flags_t error_flags;
 volatile uint16_t charge_count_error;

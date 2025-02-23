@@ -56,7 +56,6 @@ typedef union system_flags{
     uint8_t   all__;
 } system_flags_t;
 
-
 typedef union pump_flags{
     struct{
         uint8_t     pump1_on               :1;
@@ -65,6 +64,12 @@ typedef union pump_flags{
     uint8_t   all__;
 }pump_flags_t;
 
+typedef union mna_flags{
+    struct{
+        uint8_t     MNA_on               :1;
+    };
+    uint8_t   all__;
+}mna_flags_t;
 
 typedef union error_flags{
     struct{
@@ -85,6 +90,7 @@ typedef struct control
     uint16_t motor_RAMP_target;
     uint16_t MCC_POWER_target;
     uint16_t mde_steering_wheel_position;
+    uint16_t mna_heading;
 }control_t;
 
 
