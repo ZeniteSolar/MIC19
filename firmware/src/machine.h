@@ -67,6 +67,9 @@ typedef union pump_flags{
 typedef union mna_flags{
     struct{
         uint8_t     MNA_on               :1;
+        uint8_t     MNA_disabled         :1;
+        uint8_t     MNA_stage_1          :1;
+        uint8_t     MNA_stage_2          :1;
     };
     uint8_t   all__;
 }mna_flags_t;
