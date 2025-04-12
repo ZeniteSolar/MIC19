@@ -25,7 +25,10 @@ void can_app_send_motor(void);
 void can_app_send_boat(void);
 void can_app_send_pumps(void);
 void can_app_send_steering_wheel(void);
+void can_app_send_autopilot_disable(void);
 void can_app_extractor_mcs_relay(can_t *msg);
+void can_app_extractor_mna_state(can_t *msg);
+void can_app_extractor_mna_command(can_t *msg);
 void can_app_msg_extractors_switch(can_t *msg);
 // void can_app_extractor_mic17_state(can_t *msg);
 // void can_app_extractor_mic17_mcs(can_t *msg);
@@ -37,6 +40,7 @@ void check_can(void);
 #define CAN_APP_SEND_MDE_CLK_DIV (MACHINE_TIMER_FREQUENCY / CAN_MSG_MIC19_MDE_FREQUENCY)
 #define CAN_APP_SEND_BOAT_CLK_DIV (MACHINE_TIMER_FREQUENCY / CAN_MSG_MIC19_MCS_FREQUENCY)
 #define CAN_APP_SEND_PUMPS_CLK_DIV (MACHINE_TIMER_FREQUENCY / CAN_MSG_MIC19_PUMPS_FREQUENCY)
+#define CAN_APP_SEND_MNA_CLK_DIV (MACHINE_TIMER_FREQUENCY / CAN_MSG_MIC19_MNA_FREQUENCY)
 #endif
 
 extern uint32_t can_app_send_state_clk_div;
@@ -44,5 +48,6 @@ extern uint32_t can_app_send_motor_clk_div;
 extern uint32_t can_app_send_mde_clk_div;
 extern uint32_t can_app_send_boat_clk_div;
 extern uint32_t can_app_send_pumps_clk_div;
+extern uint32_t can_app_send_mna_div;
 
 #endif /* ifndef CAN_APP_H */
