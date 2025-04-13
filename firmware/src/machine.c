@@ -183,6 +183,22 @@ inline void print_system_flags(void)
 			usart_send_string("|D: ");
 			usart_send_uint16(control.mde_steering_wheel_position);
 		break;
+	case 11:
+			usart_send_string("MNA: ");
+			usart_send_char('0' + mna_flags.MNA_on);
+		break;
+	case 12:
+			usart_send_string(",stg1: ");
+			usart_send_char('0' + mna_flags.MNA_stage_1);
+		break;
+	case 13:
+		usart_send_string(",stg2: ");
+		usart_send_char('0' + mna_flags.MNA_stage_2);
+		break;
+	case 14:
+		usart_send_string(",dis: ");
+		usart_send_char('0' + mna_flags.MNA_disable);
+		break;
 	
 	default:
 			usart_send_char('\n');
