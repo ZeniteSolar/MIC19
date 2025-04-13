@@ -67,7 +67,7 @@ typedef union pump_flags{
 typedef union mna_flags{
     struct{
         uint8_t     MNA_on               :1;
-        uint8_t     MNA_disabled         :1;
+        uint8_t     MNA_disable         :1;
         uint8_t     MNA_stage_1          :1;
         uint8_t     MNA_stage_2          :1;
     };
@@ -143,6 +143,7 @@ void buzzer(uint8_t buzzer_frequency, uint8_t buzzer_rhythm_on, uint8_t buzzer_r
 // machine variables
 extern volatile state_machine_t state_machine;
 extern volatile control_t control;
+extern volatile mna_flags_t mna_flags;
 extern volatile pump_flags_t pump_flags;
 extern volatile system_flags_t system_flags;
 extern volatile error_flags_t error_flags;
