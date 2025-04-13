@@ -173,7 +173,7 @@ inline void print_system_flags(void)
 			usart_send_char('0' + system_flags.reverse);
 		break;
 	case 8:
-			usart_send_string("V: ");
+			usart_send_string("|V: ");
 			usart_send_uint16(control.motor_PWM_target);
 		break;
 	case 9:
@@ -185,7 +185,7 @@ inline void print_system_flags(void)
 			usart_send_uint16(control.mde_steering_wheel_position);
 		break;
 	case 11:
-			usart_send_string("MNA: ");
+			usart_send_string(",MNA: ");
 			usart_send_char('0' + mna_flags.MNA_on);
 		break;
 	case 12:
