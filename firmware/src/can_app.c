@@ -64,6 +64,8 @@ inline void can_app_extractor_mic17_mcs(can_t *msg)
 */
 
 #include "can_app.h"
+#include "../lib/bit_utils.h"
+#include "machine.h"
 
 uint32_t can_app_send_state_clk_div;
 uint32_t can_app_send_motor_clk_div;
@@ -139,11 +141,11 @@ inline void can_app_task(void)
         can_app_send_mde_clk_div = 0;
     }
 
-    if (can_app_send_mna_div++ >= CAN_APP_SEND_MNA_CLK_DIV)
+    if (can_app_send_mna_clk_div++ >= CAN_APP_SEND_MNA_CLK_DIV)
     {
         VERBOSE_MSG_CAN_APP(usart_send_string("autopilot disable msg was sent.\n"));
         can_app_send_autopilot_disable();
-        can_app_send_mna_div = 0;
+        can_app_send_mna_clk_div = 0;
     }
 }
 
@@ -245,22 +247,25 @@ inline void can_app_send_autopilot_disable(void)
             control.mde_steering_wheel_position > 690 &&
             control.mde_steering_wheel_position < 710)
         {
-            mna_flags.MNA_disabled = 1;
+            mna_flags.MNA_disable = 1;
         }
+    }else
+    {
+        mna_flags.MNA_stage_1 = 0;
+        mna_flags.MNA_stage_2 = 0;
+        mna_flags.MNA_disable = 0;
     }
 
     msg.data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] = CAN_SIGNATURE_SELF;
-    if (mna_flags.MNA_disabled)
+    if (mna_flags.MNA_disable && mna_flags.MNA_on)
     {
-        msg.data[CAN_MSG_MIC19_MNA_MNA_DISABLE_BYTE] = 0xFF;
-
-        mna_flags.MNA_disabled = 0;
-        mna_flags.MNA_stage_1 = 0;
-        mna_flags.MNA_stage_2 = 0;
+        set_bit(msg.data[CAN_MSG_MIC19_MNA_MNA_DISABLE_BYTE],
+                CAN_MSG_MIC19_MNA_MNA_DISABLE_MNA_DISABLE_BIT);
     }
-    else
+    else if (!mna_flags.MNA_on)
     {
-        msg.data[CAN_MSG_MIC19_MNA_MNA_DISABLE_BYTE] = 0x00;
+        clr_bit(msg.data[CAN_MSG_MIC19_MNA_MNA_DISABLE_BYTE],
+                CAN_MSG_MIC19_MNA_MNA_DISABLE_MNA_DISABLE_BIT);
     }
 
     can_send_message(&msg);
