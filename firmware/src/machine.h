@@ -147,6 +147,7 @@ extern volatile mna_flags_t mna_flags;
 extern volatile pump_flags_t pump_flags;
 extern volatile system_flags_t system_flags;
 extern volatile error_flags_t error_flags;
+extern volatile uint32_t mna_timer;
 extern volatile uint16_t charge_count_error;
 extern volatile uint8_t relay_clk;
 extern volatile uint8_t first_boat_off;

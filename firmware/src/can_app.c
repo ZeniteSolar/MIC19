@@ -344,6 +344,7 @@ inline void can_app_extractor_mna_state(can_t *msg)
         if (msg->data[CAN_MSG_MNA23_STATE_STATE_BYTE] == STATE_RUNNING)
         {
             mna_flags.MNA_on = 1;
+            mna_timer = 0;
         }
         else
         {

@@ -15,6 +15,7 @@ volatile uint8_t total_errors; // Contagem de ERROS
 volatile uint16_t charge_count_error;
 volatile uint8_t reset_clk;
 volatile uint32_t machine_tick = 0;
+volatile uint32_t mna_timer = 0;
 
 volatile uint8_t led_clk_div;
 
@@ -629,4 +630,12 @@ inline void machine_run(void)
 ISR(TIMER2_COMPA_vect)
 {
 	machine_clk = 1;
+
+	// Ignore MNA when not in use
+	if (mna_timer++ > 10*MACHINE_FREQUENCY)
+	{
+		mna_flags.MNA_on = 0;
+		mna_timer = 0;
+	}
+	
 }
