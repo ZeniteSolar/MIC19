@@ -239,10 +239,6 @@ inline void can_app_send_autopilot_disable(void)
 
         if (control.mde_steering_wheel_position > 834 && mna_flags.MNA_stage_1)
         {
-            mna_flags.MNA_stage_2 = 0;
-        }
-        else if (control.mde_steering_wheel_position < 566 && mna_flags.MNA_stage_1)
-        {
             mna_flags.MNA_stage_2 = 1;
         }
 
