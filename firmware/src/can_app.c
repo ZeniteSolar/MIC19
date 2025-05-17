@@ -162,7 +162,7 @@ inline void can_app_send_state(void)
 
     can_send_message(&msg);
 
-    VERBOSE_MSG_CAN_APP(usart_send_string("state msg was send.\n"));
+    VERBOSE_MSG_CAN_APP(usart_send_string("state msg was sent.\n"));
     VERBOSE_MSG_CAN_APP(can_app_print_msg(&msg));
 }
 
@@ -237,7 +237,11 @@ inline void can_app_send_autopilot_disable(void)
             mna_flags.MNA_stage_1 = 1;
         }
 
-        if (control.mde_steering_wheel_position > 834)
+        if (control.mde_steering_wheel_position > 834 && mna_flags.MNA_stage_1)
+        {
+            mna_flags.MNA_stage_2 = 0;
+        }
+        else if (control.mde_steering_wheel_position < 566 && mna_flags.MNA_stage_1)
         {
             mna_flags.MNA_stage_2 = 1;
         }
@@ -340,13 +344,12 @@ inline void can_app_extractor_mna_state(can_t *msg)
 {
     if (msg->data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] == CAN_SIGNATURE_MNA23)
     {
-
         if (msg->data[CAN_MSG_MNA23_STATE_STATE_BYTE] == STATE_RUNNING)
         {
             mna_flags.MNA_on = 1;
             mna_timer = 0;
         }
-        else
+        else if (msg->data[CAN_MSG_MNA23_STATE_STATE_BYTE] == STATE_IDLE)
         {
             mna_flags.MNA_on = 0;
         }
@@ -376,7 +379,8 @@ inline void can_app_extractor_mna_command(can_t *msg)
  */
 inline void can_app_msg_extractors_switch(can_t *msg)
 {
-    if (msg->data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] == CAN_SIGNATURE_MCS19)
+    if (msg->data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] == CAN_SIGNATURE_MCS19 ||
+        msg->data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] == CAN_SIGNATURE_MNA23)
     {
 
         switch (msg->id)
