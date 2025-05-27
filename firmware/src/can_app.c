@@ -257,7 +257,8 @@ inline void can_app_send_autopilot_disable(void)
     }
 
     msg.data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] = CAN_SIGNATURE_SELF;
-    if (mna_flags.MNA_disable && mna_flags.MNA_on)
+    if ((mna_flags.MNA_disable && mna_flags.MNA_on) ||
+        (!pump_flags.pump2_on))
     {
         set_bit(msg.data[CAN_MSG_MIC19_MNA_MNA_DISABLE_BYTE],
                 CAN_MSG_MIC19_MNA_MNA_DISABLE_MNA_DISABLE_BIT);
