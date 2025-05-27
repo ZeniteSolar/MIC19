@@ -635,6 +635,9 @@ ISR(TIMER2_COMPA_vect)
 	if (mna_timer++ > MACHINE_FREQUENCY)
 	{
 		mna_flags.MNA_on = 0;
+		mna_flags.MNA_stage_1 = 0;
+		mna_flags.MNA_stage_2 = 0;
+		mna_flags.MNA_disable = 0;
 		mna_timer = 0;
 	}
 }
