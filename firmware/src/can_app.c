@@ -381,7 +381,6 @@ inline void can_app_msg_extractors_switch(can_t *msg)
 
         switch (msg->id)
         {
-
         case CAN_MSG_MCS19_START_STAGES_ID:
             VERBOSE_MSG_CAN_APP(usart_send_string("got a mcs msg: "));
             VERBOSE_MSG_CAN_APP(can_app_print_msg(msg));
@@ -391,13 +390,31 @@ inline void can_app_msg_extractors_switch(can_t *msg)
         case CAN_MSG_MNA23_STATE_ID:
             VERBOSE_MSG_CAN_APP(usart_send_string("got a mna state msg: "));
             VERBOSE_MSG_CAN_APP(can_app_print_msg(msg));
-            can_app_extractor_mna_state(msg);
+            if (pump_flags.pump2_on) // pump2 switch is used to enable the MNA
+            {
+                can_app_extractor_mna_state(msg);
+            }else{
+                mna_flags.MNA_on = 0;
+                mna_flags.MNA_stage_1 = 0;
+                mna_flags.MNA_stage_2 = 0;
+                mna_flags.MNA_disable = 0;
+                mna_timer = 0;
+            }
             break;
 
         case CAN_MSG_MNA23_NAVIGATION_COMMANDS_ID:
             VERBOSE_MSG_CAN_APP(usart_send_string("got a mna command msg: "));
             VERBOSE_MSG_CAN_APP(can_app_print_msg(msg));
-            can_app_extractor_mna_state(msg);
+            if (pump_flags.pump2_on) // pump2 switch is used to enable the MNA
+            {
+                can_app_extractor_mna_command(msg);
+            }else{
+                mna_flags.MNA_on = 0;
+                mna_flags.MNA_stage_1 = 0;
+                mna_flags.MNA_stage_2 = 0;
+                mna_flags.MNA_disable = 0;
+                mna_timer = 0;
+            }
             break;
 
         default:
