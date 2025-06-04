@@ -44,36 +44,60 @@
 #define DEAD_MEN_TO_UPDATE 10
 #define EMERGENCY_ON_TO_UPDATE 10
 
+
 #ifdef ADC_ON
-//#define ADC_8BITS
 // ADC CONFIGURATION
 // note that changing ADC_FREQUENCY may cause problems with avg_sum_samples
-#define ADC_FREQUENCY 1000U // 20000
-#define ADC_TIMER_PRESCALER 64UL
-#define ADC_AVG_SIZE_2 7    // in base 2
-#define ADC_AVG_SIZE_10 128 // in base 10
+// #define ADC_8BITS
+#define ADC_FREQUENCY                       10000 // 20000
+#define ADC_TIMER_PRESCALER                 64
+#define ADC_TOP_CTC                         F_CPU/(ADC_TIMER_PRESCALER * 2UL * ADC_FREQUENCY) -1
+
+#if ADC_TOP_CTC >= 256
+    #error "Value for ADC timer top is greater than 8 bits"
+#elif ADC_TOP_CTC < 2
+    #error "Value for ADC timer top is too low, increase the prescaler"
+#endif
 
 #define ADC_AVG_VARIABLE_OVERFLOW_PROTECTION 4294967296 / 255 // 32bit variable/8bit variable(maximum value of adc)
 
-//#define POTENTIOMETER_LOW_TRIGGER 2
-//#define POTENTIOMETER_HIGH_TRIGGER 2
 
-//#define FAKE_ADC_ON
-#ifdef FAKE_ADC_ON
-#define FAKE_ADC 1
-#endif // FAKE_ADC_ON
+/** @brief Circular buffer size definitions 
+ * Using equal size for adc structures...
+ * one could replicate the structure delacartion with different sizes
+ * or even, % TODO use dynamic allocation for strucutres 
+ */
+#define ADC_AVG_SIZE_10                     64
+#if (ADC_AVG_SIZE_10 == 0 || (ADC_AVG_SIZE_10 & (ADC_AVG_SIZE_10 - 1)) != 0)
+    #error "ADC_AVG_SIZE_10 must be a power of 2!"
+#endif
+#define cbuf_adc0_SIZE                      ADC_AVG_SIZE_10  /**< Buffer size for ADC0 */
+#define cbuf_adc0_SIZE_LOG2                 log2_function(cbuf_adc0_SIZE)   /**< Log2 of buffer size */
+#define cbuf_adc1_SIZE                      ADC_AVG_SIZE_10  /**< Buffer size for ADC1 */
+#define cbuf_adc1_SIZE_LOG2                 log2_function(cbuf_adc1_SIZE)    /**< Log2 of buffer size */
+#endif //ADC_ON
 
-#endif // ADC_ON
+
+
+
 
 #ifdef MACHINE_ON
+// ----> Cbuf used + not a power module ---> no need for even numbers between ADC and Machine frequencies
+// no need for clk divider 
+// #define MACHINE_CLK_DIVIDER_VALUE           ((uint64_t)(uint32_t)MACHINE_FREQUENCY*(uint32_t)ADC_AVG_SIZE_10)/(ADC_FREQUENCY)           //<! machine_run clock divider
+#define MACHINE_FREQUENCY                   100           //<! machine timer frequency in Hz
+#define MACHINE_TIMER_PRESCALER             1024          //<! machine timer prescaler
+#define MACHINE_TOP_CTC                     F_CPU/(MACHINE_TIMER_PRESCALER * 2UL * MACHINE_FREQUENCY) -1
+#if MACHINE_TOP_CTC >= 256
+    #error "Value for Machine timer top is greater than 8 bits"
+#elif MACHINE_TOP_CTC < 2
+    #error "Value for Machine timer top is too low, increase the prescaler"
+#endif
+
 // The machine frequency may not be superior of ADC_FREQUENCY/ADC_AVG_SIZE_10
-#define MACHINE_TIMER_FREQUENCY 120UL  //<! machine timer frequency in Hz
-#define MACHINE_TIMER_PRESCALER 1024UL //<! machine timer prescaler
-#define MACHINE_FREQUENCY MACHINE_TIMER_FREQUENCY
-
-// SCALE TO CONVERT ADC DEFINITIONS
-#define VSCALE (uint16_t)1000
-
+#if MACHINE_FREQUENCY > (ADC_FREQUENCY/ADC_AVG_SIZE_10)
+    #error "Machine runs faster than the required time to fill the ADC ring buffer"
+#endif
 #endif // MACHINE_ON
 
 // INPUT PINS DEFINITIONS
@@ -117,17 +141,17 @@
 // #define 	MCC_POWER_POT			<Not used, it was replaced by MDE_POSITION_POT>
 
 #ifdef LED_ON
-#define LED_PORT PORTD
-#define LED_PIN PIND
-#define LED_DDR DDRD
-#define LED1 PD6
-#define cpl_led(y) cpl_bit(LED_PORT, y)
-#define set_led(y) set_bit(LED_PORT, y)
-#define clr_led(y) clr_bit(LED_PORT, y)
+#define     LED_PORT                PORTD
+#define     LED_PIN                 PIND
+#define     LED_DDR                 DDRD
+#define     LED1                    PD6
+#define     cpl_led(y)              cpl_bit(LED_PORT, y)
+#define     set_led(y)              set_bit(LED_PORT, y)
+#define     clr_led(y)              clr_bit(LED_PORT, y)
 #else
-#define cpl_led()
-#define set_led()
-#define clr_led()
+#define     cpl_led()
+#define     set_led()
+#define     clr_led()
 #endif // LED_ON
 
 #ifdef BUZZER_ON
@@ -140,8 +164,19 @@
 #define clr_buzzer() clr_bit(BUZZER_PORT, BUZZER)
 #endif
 
+
 #ifdef CAN_ON
 #define SPI_ON
+#define CAN_APP_SEND_STATE_FREQ     10//36000     //<! state msg frequency in Hz
+#define CAN_APP_SEND_ADC_FREQ       50//6000      //<! adc msg frequency in Hz
+// TODO others
+#if MACHINE_FREQUENCY % CAN_APP_SEND_STATE_FREQ != 0
+    #warning "CAN_APP_SEND_STATE_FREQ doesn't have a multiple equal to MACHINE_FREQUENCY, this frequency will be truncated"
+#endif
+
+#if MACHINE_FREQUENCY % CAN_APP_SEND_ADC_FREQ != 0
+    #warning "CAN_APP_SEND_ADC_FREQ doesn't have a multiple equal to MACHINE_FREQUENCY, this frequency will be truncated"
+#endif
 
 
 // CANBUS DEFINITONS
