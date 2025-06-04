@@ -139,46 +139,57 @@ inline void print_system_flags(void)
 	case 0:
 		usart_send_string("B:");
 		usart_send_char('0' + system_flags.boat_on);
+		usart_send_string(" ");
 		break;
 	case 1:
 		usart_send_string(",B_s:");
 		usart_send_char('0' + system_flags.boat_switch_on);
+		usart_send_string(" ");
 		break;
 	case 2:
 		usart_send_string(",MAM:");
 		usart_send_char('0' + system_flags.motor_on);
+		usart_send_string(" ");
 		break;
 	case 3:
 		usart_send_string(",MCS:");
 		usart_send_char('0' + system_flags.MCS_on);
+		usart_send_string(" ");
 		break;
 	case 4:
 		usart_send_string(",MCC:");
 		usart_send_char('0' + system_flags.MCC_on);
+		usart_send_string(" ");
 		break;
 	case 5:
 		usart_send_string(",DMS:");
 		usart_send_char('0' + system_flags.dead_men_switch);
+		usart_send_string(" ");
 		break;
 	case 6:
 		usart_send_string(",emer:");
 		usart_send_char('0' + system_flags.emergency);
+		usart_send_string(" ");
 		break;
 	case 7:
 		usart_send_string(",re:");
 		usart_send_char('0' + system_flags.reverse);
+		usart_send_string(" ");
 		break;
 	case 8:
 		usart_send_string("V: ");
 		usart_send_uint16(control.motor_PWM_target);
+		usart_send_string(" ");
 		break;
 	case 9:
 		usart_send_string("|A: ");
 		usart_send_uint16(control.motor_RAMP_target);
+		usart_send_string(" ");
 		break;
 	case 10:
 		usart_send_string("|D: ");
 		usart_send_uint16(control.mde_steering_wheel_position);
+		usart_send_string(" ");
 		break;
 
 	default:
