@@ -17,12 +17,26 @@
 
 #include "conf.h"
 
-// Equations for mode 2 (CTC with TOP OCR2A)
-// Note the resolution. For example.. at 150hz, ICR1 = PWM_TOP = 159, so it
-#define MACHINE_TIMER_TOP (uint8_t)(((F_CPU) / ((MACHINE_TIMER_PRESCALER) * (MACHINE_TIMER_FREQUENCY))) - 1)
+// safety limits for adc values
+// ---
+
+// PRINT INFOS CONSTANTS
+#define PRINT_INFOS_TIME        0.2 // seconds for half a period 
+#define PRINT_INFOS_CLK_DIV     PRINT_INFOS_TIME * MACHINE_FREQUENCY
+
+// LED CONSTANTS
+#define IDLE_LED_TIME           1 // half a period...time that the LED stays on
+#define IDLE_LED_CLK_DIV        IDLE_LED_TIME * 2 * MACHINE_FREQUENCY //  
+#define RUNNING_LED_TIME        0.25 // half a period...time that the LED stays on
+#define RUNNING_LED_CLK_DIV     RUNNING_LED_TIME * 2 * MACHINE_FREQUENCY //  
+#define ERROR_LED_TIME          0.05 // half a period...time that the LED stays on
+#define ERROR_LED_CLK_DIV       ERROR_LED_TIME * 2 * MACHINE_FREQUENCY //  
+
 
 #ifdef ADC_ON
 #include "adc.h"
+#define MA_MOTOR_PWM_TARGET         ma_adc0()
+#define MA_MDE_POSITION_TARGET      ma_adc2()
 #endif
 #ifdef USART_ON
 #include "usart.h"
@@ -91,13 +105,13 @@ typedef struct control
 
 // machine checks
 void check_buffers(void);
-void reset_measurements(void);
-void average_measurements(void);
+void read_and_check_adcs(void);
 
 // debug functions
 void print_configurations(void);
 void print_system_flags(void);
 void print_error_flags(void);
+void print_infos(void);
 
 // machine tasks
 void task_initializing(void);
@@ -124,10 +138,6 @@ void read_potentiometers(void);
 void read_boat_on(void);
 void read_pump_switches(void);
 void reset_switches(void);
-void acumulate_potentiometers(void);
-void average_motor_potentiometers(void);
-void average_mcc_potentiometers(void);
-void average_mde_potentiometers(void);
 
 void buzzer(uint8_t buzzer_frequency, uint8_t buzzer_rhythm_on, uint8_t buzzer_rhythm_off);
 
