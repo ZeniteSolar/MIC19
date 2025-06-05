@@ -11,8 +11,6 @@ volatile uint8_t first_boat_off;
 volatile uint8_t machine_clk;
 volatile uint8_t machine_clk_divider;
 volatile uint8_t total_errors; // Contagem de ERROS
-volatile uint16_t charge_count_error;
-volatile uint8_t reset_clk;
 
 volatile uint16_t print_clk_div;
 volatile uint8_t led_clk_div;
@@ -207,23 +205,23 @@ inline void read_and_check_adcs(void) {
   control.motor_PWM_target = MA_MOTOR_PWM_TARGET;
   control.mde_steering_wheel_position = MA_MDE_POSITION_TARGET;
 
-//   switch (state_machine) {
-//   case STATE_INITIALIZING:
-//     check_battery_voltage();
-
-//     break;
-//   case STATE_IDLE:
-//     check_battery_voltage();
-
-//     break;
-//   case STATE_RUNNING:
-//     check_battery_voltage();
-
-//     break;
-//   default:
-//     break;
-//   }
 #endif
+  //   switch (state_machine) {
+  //   case STATE_INITIALIZING:
+  //     check_battery_voltage();
+
+  //     break;
+  //   case STATE_IDLE:
+  //     check_battery_voltage();
+
+  //     break;
+  //   case STATE_RUNNING:
+  //     check_battery_voltage();
+
+  //     break;
+  //   default:
+  //     break;
+  //   }
 }
 
 inline void task_initializing(void) {
@@ -345,20 +343,21 @@ inline void read_boat_on(void) {
   // END OF BOAT SWITCH
 
   // EMERGENCY SWITCH
-  // if (!tst_bit(CTRL_SWITCHES_PIN, EMERGENCY_SWITCH)) {
-  //   if (++count_emergency_state[ON] >= EMERGENCY_ON_TO_UPDATE) {
-  //     count_emergency_state[OFF] = 0;
-  //     system_flags.emergency = 1;
-  //   }
-  // } else {
-  //   if (++count_emergency_state[OFF] >= EMERGENCY_ON_TO_UPDATE) {
-  //     count_emergency_state[ON] = 0;
-  //     system_flags.emergency = 0;
-  //   }
-  // }
+  if (!tst_bit(CTRL_SWITCHES_PIN, EMERGENCY_SWITCH)) {
+    if (++count_emergency_state[ON] >= EMERGENCY_ON_TO_UPDATE) {
+      count_emergency_state[OFF] = 0;
+      system_flags.emergency = 1;
+    }
+  } else {
+    if (++count_emergency_state[OFF] >= EMERGENCY_ON_TO_UPDATE) {
+      count_emergency_state[ON] = 0;
+      system_flags.emergency = 0;
+    }
+  }
+
   // EMERGENCY EXCLUSIVE ON HARDWARE TO MAC
   // This means emergency will be set as always "safe"=1
-  system_flags.emergency = 1;
+  // system_flags.emergency = 1;
   // END OF EMERGENCY SWITCH
 
   if (system_flags.boat_switch_on && system_flags.emergency)
@@ -389,7 +388,6 @@ inline void read_pump_switches(void) {
 
 inline void read_switches(void) {
   enum { ON, OFF };
-  static uint8_t clk_div_switch_msg = 0;
   static uint8_t count_motor_state[2] = {0, 0};
   static uint8_t count_DMS_state[2] = {0, 0};
 
@@ -412,21 +410,20 @@ inline void read_switches(void) {
   // TEST DIGITAL PINS AND FILTER THEM
 
   // DEAD MEN SWITCH
-  // if (tst_bit(DMS_PIN, DMS)) {
-  //   if (++count_DMS_state[ON] >= DEAD_MEN_TO_UPDATE) {
-  //     count_DMS_state[OFF] = 0;
-  //     system_flags.dead_men_switch = 1;
-  //   }
-  // } else {
-  //   if (++count_DMS_state[OFF] >= DEAD_MEN_TO_UPDATE) {
-  //     count_DMS_state[ON] = 0;
-  //     system_flags.dead_men_switch = 0;
-  //   }
-  // }
+  if (tst_bit(DMS_PIN, DMS)) {
+    if (++count_DMS_state[ON] >= DEAD_MEN_TO_UPDATE) {
+      count_DMS_state[OFF] = 0;
+      system_flags.dead_men_switch = 1;
+    }
+  } else {
+    if (++count_DMS_state[OFF] >= DEAD_MEN_TO_UPDATE) {
+      count_DMS_state[ON] = 0;
+      system_flags.dead_men_switch = 0;
+    }
+  }
   // DEADMAN EXCLUSIVE ON HARDWARE TO MAC
   // This means deadman will be set as always "safe"=0
-  system_flags.dead_men_switch = 
-
+  // system_flags.dead_men_switch =
   // END OF DEAD MEN SWITCH
 
   // REVERSE SWITCH
@@ -555,12 +552,18 @@ inline void machine_run(void) {
       break;
     case STATE_IDLE:
       task_idle();
+#ifdef PRINT_INFOS
+      print_infos();
+#endif /* PRINT_INFOS */
 #ifdef CAN_ON
       can_app_task();
 #endif /* CAN_ON */
       break;
     case STATE_RUNNING:
       task_running();
+#ifdef PRINT_INFOS
+      print_infos();
+#endif /* PRINT_INFOS */
 #ifdef CAN_ON
       can_app_task();
 #endif /* CAN_ON */
@@ -568,13 +571,13 @@ inline void machine_run(void) {
       break;
     case STATE_ERROR:
       task_error();
-
+      __attribute__((fallthrough));
     case STATE_RESET:
     default:
       task_reset();
       break;
     }
-    print_system_flags();
+    // print_system_flags();
 #endif /* ADC_ON */
   }
 }
