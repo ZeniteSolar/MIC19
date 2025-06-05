@@ -8,7 +8,8 @@
  */
 
 #ifndef CONF_H
-//#define CONF_H
+#define CONF_H
+#include "../lib/log2.h"
 
 #ifndef F_CPU
 #define F_CPU 16000000UL // define a frequencia do microcontrolador - 16MHz
@@ -73,8 +74,8 @@
 #endif
 #define cbuf_adc0_SIZE                      ADC_AVG_SIZE_10  /**< Buffer size for ADC0 */
 #define cbuf_adc0_SIZE_LOG2                 log2_function(cbuf_adc0_SIZE)   /**< Log2 of buffer size */
-#define cbuf_adc1_SIZE                      ADC_AVG_SIZE_10  /**< Buffer size for ADC1 */
-#define cbuf_adc1_SIZE_LOG2                 log2_function(cbuf_adc1_SIZE)    /**< Log2 of buffer size */
+#define cbuf_adc2_SIZE                      ADC_AVG_SIZE_10  /**< Buffer size for ADC1 */
+#define cbuf_adc2_SIZE_LOG2                 log2_function(cbuf_adc2_SIZE)    /**< Log2 of buffer size */
 #endif //ADC_ON
 
 
