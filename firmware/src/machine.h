@@ -153,7 +153,6 @@ extern volatile uint8_t first_boat_off;
 extern volatile uint8_t machine_clk;
 extern volatile uint8_t machine_clk_divider;
 extern volatile uint8_t total_errors;           // Contagem de ERROS
-extern volatile uint16_t charge_count_error;
 extern volatile uint8_t reset_clk;
 
 // other variables
