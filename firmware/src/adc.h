@@ -17,36 +17,80 @@
 #include "dbg_vrb.h"
 #include "usart.h"
 #include "../lib/bit_utils.h"
+#include "../lib/cbuf.h"
 #include "../lib/log2.h"
 
 #define ADC_LAST_CHANNEL (uint8_t)ADC2
 
-// Equations for mode 2 (CTC with TOP OCR2A)
-// Note the resolution. For example.. at 150hz, ICR1 = PWM_TOP = 159, so it
-//#define QUOTIENT  (((uint32_t)MACHINE_TIMER_PRESCALER)*((uint32_t)MACHINE_TIMER_FREQUENCY))
-//#define ADC_TIMER_TOP (0.5*(F_CPU)/QUOTIENT)
-#define ADC_TIMER_FREQUENCY     (uint32_t)((ADC_FREQUENCY) * (ADC_LAST_CHANNEL + 1))
-#define ADC_TIMER_TOP           (uint8_t)(((F_CPU) / ((ADC_TIMER_PRESCALER) * (ADC_TIMER_FREQUENCY))) - 1)
+/** @brief Flag indicating new ADC data is available */
+extern volatile uint8_t adc_data_ready;
+extern volatile uint16_t adc_debug_clk_div;
+#define ADC_DEBUG_CLK_DIV   (0.5 * ADC_FREQUENCY)  // Time to print(s) * (1/(ADC period (s))
 
-typedef enum adc_channels{
-    ADC0, ADC1 ,ADC2, ADC3, ADC4, ADC5
-} adc_channels_t;                           //*< the adc_channel type
+/** 
+ * @brief ADC channel selection enum
+ */
+typedef enum {
+    ADC0, adc2, ADC2
+} adc_channels_t;
 
-typedef struct{
-    uint32_t sum;
-    uint16_t avg;
-    uint16_t samples;
-} avg_t;
+/** @brief Currently selected ADC channel */
+static volatile adc_channels_t ADC_CHANNEL = ADC0;
 
+/** 
+ * @brief Select an ADC channel
+ * @param __ch The ADC channel to select
+ * @return uint8_t Status of selection
+ */
+uint8_t adc_select_channel(adc_channels_t __ch);
 
+/** 
+ * @brief Initialize the ADC module 
+ */
 void adc_init(void);
 
-/**
- * @brief 
- * 
- * @param channel 
- * @return uint16_t 
- */
-uint16_t adc_get_measurement_avg(adc_channels_t channel);
+/** @brief Initialize ADC moving average buffers */
+void init_buffers(void);
 
-#endif /* ifndef _ADC_H_ */
+/** 
+ * @brief Circular buffer structure for ADC values 
+ */
+typedef struct {
+    uint8_t  m_getIdx;   /**< Read index */
+    uint8_t  m_putIdx;   /**< Write index */
+#ifdef ADC_8BITS
+    uint8_t  m_entry[cbuf_adc0_SIZE];  /**< Buffer entries (8-bit mode) */
+#else
+    uint16_t m_entry[cbuf_adc0_SIZE];  /**< Buffer entries (16-bit mode) */
+#endif
+} adc_cbuf_adc0_t;
+
+typedef struct {
+    uint8_t  m_getIdx;   /**< Read index */
+    uint8_t  m_putIdx;   /**< Write index */
+#ifdef ADC_8BITS
+    uint8_t  m_entry[cbuf_adc2_SIZE];  /**< Buffer entries (8-bit mode) */
+#else
+    uint16_t m_entry[cbuf_adc2_SIZE];  /**< Buffer entries (16-bit mode) */
+#endif
+} adc_cbuf_adc2_t;
+
+/** @brief Circular buffer instances for ADC0 and adc2 */
+extern volatile adc_cbuf_adc0_t cbuf_adc0;
+extern volatile adc_cbuf_adc2_t cbuf_adc2;
+
+/** @brief Moving average and average value declarations */
+#ifdef ADC_8BITS
+extern volatile uint8_t avg_adc0;
+extern uint8_t ma_adc0(void);
+extern volatile uint8_t avg_adc2;
+extern uint8_t ma_adc2(void);
+#else
+extern volatile uint16_t avg_adc0;
+extern uint16_t ma_adc0(void);
+extern volatile uint16_t avg_adc2;
+extern uint16_t ma_adc2(void);
+#endif
+
+
+#endif /* _ADC_H_ */
