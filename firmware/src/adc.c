@@ -16,8 +16,8 @@ volatile adc_cbuf_adc2_t cbuf_adc2;
 volatile uint16_t adc_debug_clk_div = 0; 
 
 // Coefficients for linearization, example coefficients
-static const int16_t adc0_a = 42;   // 0.04205947 * 100 ≈ 4
-static const int16_t adc0_b = 77;  // 0.12829264 * 100 ≈ 13
+static const int16_t adc0_a = 1;   // 0.04205947 * 100 ≈ 4
+static const int16_t adc0_b = 1;  // 0.12829264 * 100 ≈ 13
 static const int16_t adc2_a = adc0_a;   
 static const int16_t adc2_b = adc0_b;
 
@@ -62,11 +62,13 @@ uint16_t ma_adc0(void)
         uint16_t linearized_value = linearize_adc(raw_value, adc0_a, adc0_b);  // Apply polynomial
         sum += linearized_value;
     }
-    // if(adc_debug_clk_div++ >= ADC_DEBUG_CLK_DIV/50){
-        // usart_send_string("\ntestando SUM: ");
-        // usart_send_uint16(sum);
-        // adc_debug_clk_div = 0;
-    // } 
+    
+    if(adc_debug_clk_div++ >= ADC_DEBUG_CLK_DIV/1000){
+        usart_send_string("\ntestando SUM: ");
+        usart_send_uint16(sum);
+        adc_debug_clk_div = 0;
+    } 
+    
     avg_adc0 = sum >> cbuf_adc0_SIZE_LOG2;
     return avg_adc0;
 }
@@ -90,6 +92,7 @@ uint16_t ma_adc2(void)
         uint16_t linearized_value = linearize_adc(raw_value, adc2_a, adc2_b);  // Apply polynomial
         sum += linearized_value;
     }
+    
     avg_adc2 = sum >> cbuf_adc2_SIZE_LOG2;
     return avg_adc2;
 }
@@ -183,37 +186,52 @@ uint8_t adc_select_channel(adc_channels_t __ch)
 #else
             CBUF_Push(cbuf_adc0, ADC); 
 #endif
-            ADC_CHANNEL++;
+            ADC_CHANNEL = ADC2;
+            ADMUX = (ADMUX & 0xF8) | ADC2;
+
+            // Dummy conversion for settling again 
+            ADCSRA |= (1 << ADSC);
+            while (!(ADCSRA & (1 << ADIF))) { }
+            ADCSRA |= (1 << ADIF);
             break;
-        case adc2:
-			break;
+
         case ADC2:
             // VERBOSE_MSG_ADC(usart_send_string(" \tadc2: "));
-#ifdef ADC_8BITS2
+#ifdef ADC_8BITS
             CBUF_Push(cbuf_adc2, ADCH); 
 #else
             CBUF_Push(cbuf_adc2, ADC); 
 #endif
             // Last channel logic 
             adc_data_ready = 1; // Moving this into default might cause a false positive flag
-            __attribute__((fallthrough)); // Explicitly calling shared code instead of falling through
+            
+            ADC_CHANNEL = ADC0; // reset to first channel
+            ADMUX = (ADMUX & 0xF8);
+
+            //  Dummy conversion for settling again 
+            ADCSRA |= (1 << ADSC);
+            while (!(ADCSRA & (1 << ADIF))) { }
+            ADCSRA |= (1 << ADIF);
+            break;
         default:
             ADC_CHANNEL = ADC0; // reset to first channel
             break;
     }
     // adc_select_channel(ADC_CHANNEL);
-    ADMUX = (ADMUX & 0xF8) | ADC_CHANNEL;
+    // ADMUX = (ADMUX & 0xF8) | ADC_CHANNEL;
 
 
     // if(adc_debug_clk_div++ >= ADC_DEBUG_CLK_DIV){
-        // #ifdef ADC_8BITS
-            // VERBOSE_MSG_ADC(usart_send_uint8(ADCH));
-            // VERBOSE_MSG_ADC(usart_send_char('\n'));
-        // #else
-            // VERBOSE_MSG_ADC(usart_send_uint16(ADC));
-            // VERBOSE_MSG_ADC(usart_send_char('\n'));
-        // #endif
-        // adc_debug_clk_div = 0;
+    //     #ifdef ADC_8BITS
+    //         VERBOSE_MSG_ADC(usart_send_char('\t'));
+    //         VERBOSE_MSG_ADC(usart_send_uint8(ADCH));
+    //         VERBOSE_MSG_ADC(usart_send_char('\n'));
+    //         #else
+    //         VERBOSE_MSG_ADC(usart_send_char('\t'));
+    //         VERBOSE_MSG_ADC(usart_send_uint16(ADC));
+    //         VERBOSE_MSG_ADC(usart_send_char('\n'));
+    //     #endif
+    //     adc_debug_clk_div = 0;
     // }  
 }
 
