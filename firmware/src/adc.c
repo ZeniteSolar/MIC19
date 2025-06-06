@@ -15,11 +15,11 @@ volatile adc_cbuf_adc2_t cbuf_adc2;
 
 volatile uint16_t adc_debug_clk_div = 0; 
 
-// Coefficients for linearization, example coefficients
-static const int16_t adc0_a = 1;   // 0.04205947 * 100 ≈ 4
-static const int16_t adc0_b = 1;  // 0.12829264 * 100 ≈ 13
-static const int16_t adc2_a = adc0_a;   
-static const int16_t adc2_b = adc0_b;
+// // Coefficients for linearization, example coefficients
+// static const int16_t adc0_a = 1;   // 0.04205947 * 100 ≈ 4
+// static const int16_t adc0_b = 1;  // 0.12829264 * 100 ≈ 13
+// static const int16_t adc2_a = adc0_a;   
+// static const int16_t adc2_b = adc0_b;
 
 // Define the linearization polynomial as a macro or function
 
@@ -57,18 +57,28 @@ uint16_t ma_adc0(void)
 #endif
 {
     uint32_t sum = 0;
-    for (uint8_t i = cbuf_adc0_SIZE; i; i--) {
+    uint32_t max_u32 = 0xFFFFFFFF;
+    
+    // Loop from 0 to (SIZE - 1) to read every entry
+    for (uint8_t i = 0; i < cbuf_adc0_SIZE; i++) {
         uint16_t raw_value = CBUF_Get(cbuf_adc0, i);
-        uint16_t linearized_value = linearize_adc(raw_value, adc0_a, adc0_b);  // Apply polynomial
-        sum += linearized_value;
+        
+        // Saturating add: if sum + raw_value would overflow, clamp to UINT32_MAX
+        if (sum > max_u32 - raw_value) {
+            sum = max_u32;
+            // break;  // no need to continue: sum is already saturated
+        } else {
+            sum += raw_value;
+        }
     }
+
+    // if(adc_debug_clk_div++ >= ADC_DEBUG_CLK_DIV/1000){
+    //     usart_send_string("\ntestando SUM: ");
+    //     usart_send_uint16(sum);
+    //     adc_debug_clk_div = 0;
+    // } 
     
-    if(adc_debug_clk_div++ >= ADC_DEBUG_CLK_DIV/1000){
-        usart_send_string("\ntestando SUM: ");
-        usart_send_uint16(sum);
-        adc_debug_clk_div = 0;
-    } 
-    
+    // Compute average by shifting right by the log2(size)
     avg_adc0 = sum >> cbuf_adc0_SIZE_LOG2;
     return avg_adc0;
 }
@@ -87,15 +97,32 @@ uint16_t ma_adc2(void)
 #endif
 {
     uint32_t sum = 0;
-    for (uint8_t i = cbuf_adc2_SIZE; i; i--) {
+    uint32_t max_u32 = 0xFFFFFFFF;
+    
+    // Loop from 0 to (SIZE - 1) to read every entry
+    for (uint8_t i = 0; i < cbuf_adc2_SIZE; i++) {
         uint16_t raw_value = CBUF_Get(cbuf_adc2, i);
-        uint16_t linearized_value = linearize_adc(raw_value, adc2_a, adc2_b);  // Apply polynomial
-        sum += linearized_value;
+        
+        // Saturating add: if sum + raw_value would overflow, clamp to UINT32_MAX
+        if (sum > max_u32 - raw_value) {
+            sum = max_u32;
+            // break;  // no need to continue: sum is already saturated
+        } else {
+            sum += raw_value;
+        }
     }
     
+    // if(adc_debug_clk_div++ >= ADC_DEBUG_CLK_DIV/1000){
+    //     usart_send_string("\ntestando SUM: ");
+    //     usart_send_uint16(sum);
+    //     adc_debug_clk_div = 0;
+    // } 
+
+    // Compute average by shifting right by the log2(size)
     avg_adc2 = sum >> cbuf_adc2_SIZE_LOG2;
     return avg_adc2;
 }
+
 
 /**
  * @brief Changes ADC channel
@@ -241,4 +268,3 @@ uint8_t adc_select_channel(adc_channels_t __ch)
  * BADISR_vect.
  */
  EMPTY_INTERRUPT(TIMER0_COMPA_vect);
-
