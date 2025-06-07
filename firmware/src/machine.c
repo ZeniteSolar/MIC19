@@ -502,10 +502,22 @@ void print_infos(void) {
 
   if (print_clk_div++ >= PRINT_INFOS_CLK_DIV) {
     print_clk_div = 0;
-    usart_send_string("\nMotor Duty: ");
+    usart_send_string("\nTarget motor duty: ");
     usart_send_uint16(control.motor_PWM_target);
     usart_send_string("\tTarger for MDE: ");
     usart_send_uint16(control.mde_steering_wheel_position);
+    usart_send_string("\tBoat on: ");
+    usart_send_uint8(system_flags.boat_on);
+    usart_send_string("\tMotor on: ");
+    usart_send_uint8(system_flags.motor_on);
+    usart_send_string("\tReverse flag: ");
+    usart_send_uint8(system_flags.reverse);
+    
+    // usart_send_uint8(system_flags.boat_switch_on);
+    // usart_send_char('0' + system_flags.motor_on);
+    // usart_send_char('0' + system_flags.MCS_on);
+    // usart_send_char('0' + system_flags.dead_men_switch);
+    // usart_send_char('0' + system_flags.emergency);
     switch (i++) {
     case 0:
       // usart_send_string("\ntestando: ");
