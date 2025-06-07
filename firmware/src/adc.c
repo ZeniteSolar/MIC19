@@ -148,7 +148,7 @@ uint8_t adc_select_channel(adc_channels_t __ch)
 	 // configuracao do ADC
 	 PORTC   =   0b00000000;                         // disables pull-up for adcs pins
 	 DDRC    =   0b00000000;                         // all adcs as inputs
-	 DIDR0   =   0b11111111;                         // ADC0 to ADC2 as adc (digital disable)
+	 DIDR0 = (1<<ADC0D) | (1<<ADC1D) | (1<<ADC2D);  // only disable ADC0–ADC2, leave bit 5 = 0
  
 	 ADMUX   =   (0 << REFS1)                        // AVcc with external capacitor at AREF pin
 			 | (1 << REFS0)
