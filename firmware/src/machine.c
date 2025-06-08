@@ -329,7 +329,7 @@ inline void read_boat_on(void) {
   static uint8_t count_emergency_state[2] = {0, 0};
 
   // BOAT SWITCH
-  if (!tst_bit(CTRL_SWITCHES_PIN, BOAT_ON_SWITCH)) {
+  if (tst_bit(CTRL_SWITCHES_PIN, BOAT_ON_SWITCH)) {
     if (++count_boat_state[ON] >= BOAT_ON_TO_UPDATE) {
       count_boat_state[OFF] = 0;
       system_flags.boat_switch_on = 1;
@@ -394,7 +394,7 @@ inline void read_switches(void) {
   // TEST DIGITAL PINS AND FILTER THEM
 
   // MOTOR SWITCH
-  if (!tst_bit(CTRL_SWITCHES_PIN, MOTOR_ON_SWITCH)) {
+  if (tst_bit(CTRL_SWITCHES_PIN, MOTOR_ON_SWITCH)) {
     if (++count_motor_state[ON] >= MOTOR_ON_TO_UPDATE) {
       count_motor_state[OFF] = 0;
       system_flags.motor_on = 1;
@@ -427,7 +427,7 @@ inline void read_switches(void) {
   // END OF DEAD MEN SWITCH
 
   // REVERSE SWITCH
-  if (tst_bit(REVERSE_SWITCH_PIN, REVERSE_SWITCH)) {
+  if (!tst_bit(REVERSE_SWITCH_PIN, REVERSE_SWITCH)) {
     system_flags.reverse = 0;
   } else {
     system_flags.reverse = 1;
