@@ -33,7 +33,7 @@
 #define CAN_DEPENDENT
 #define ADC_ON
 #define MACHINE_ON
-#define LED_ON
+//#define LED_ON
 #define BUZZER_ON
 #define WATCHDOG_ON
 #define PRINT_INFOS
@@ -143,10 +143,13 @@
 // #define 	MCC_POWER_POT			<Not used, it was replaced by MDE_POSITION_POT>
 
 #ifdef LED_ON
+#ifdef BUZZER_ON
+#warning "LED and BUZZER share the same pin. Noisy!"
+#endif // BUZZER_ON
 #define     LED_PORT                PORTD
 #define     LED_PIN                 PIND
 #define     LED_DDR                 DDRD
-#define     LED1                    PD6
+#define     LED1                    PD4
 #define     cpl_led(y)              cpl_bit(LED_PORT, y)
 #define     set_led(y)              set_bit(LED_PORT, y)
 #define     clr_led(y)              clr_bit(LED_PORT, y)
@@ -164,7 +167,11 @@
 #define cpl_buzzer() cpl_bit(BUZZER_PORT, BUZZER)
 #define set_buzzer() set_bit(BUZZER_PORT, BUZZER)
 #define clr_buzzer() clr_bit(BUZZER_PORT, BUZZER)
-#endif
+#else
+#define cpl_buzzer()
+#define set_buzzer()
+#define clr_buzzer()
+#endif // BUZZER_ON
 
 
 #ifdef CAN_ON
