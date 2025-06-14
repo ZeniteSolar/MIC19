@@ -21,7 +21,7 @@
 // ---
 
 // PRINT INFOS CONSTANTS
-#define PRINT_INFOS_TIME        0.2 // seconds for half a period 
+#define PRINT_INFOS_TIME        2 // seconds for half a period 
 #define PRINT_INFOS_CLK_DIV     PRINT_INFOS_TIME * MACHINE_FREQUENCY
 
 // LED CONSTANTS
