@@ -247,7 +247,7 @@ inline void task_idle(void) {
   }
 #endif
 #ifdef BUZZER_ON
-  buzzer(2, 2, 128);
+  buzzer(1, 4, 90);
 
 #endif
 
@@ -284,8 +284,9 @@ inline void task_running(void) {
   }
 #endif // LED_ON
 #ifdef BUZZER_ON
-  buzzer(2, 2, 64);
-#endif
+  buzzer(10, 1, 64);
+  // buzzer(4, 8, 0);
+#endif // BUZZER_ON
 
   if (!system_flags.boat_on)
     set_state_idle();
@@ -314,10 +315,10 @@ inline void buzzer(uint8_t buzzer_frequency, uint8_t buzzer_rhythm_on,
   if (++buzzer_rhythm_clk_div <= buzzer_rhythm_on) {
     if (++buzzer_frequency_clk_div >= buzzer_frequency) {
       buzzer_frequency_clk_div = 0;
-      // cpl_buzzer();
+      cpl_buzzer();
     }
   } else {
-    // clr_buzzer();
+    clr_buzzer();
     if (buzzer_rhythm_clk_div >= buzzer_rhythm_off + buzzer_rhythm_on)
       buzzer_rhythm_clk_div = 0;
   }
@@ -343,21 +344,21 @@ inline void read_boat_on(void) {
   // END OF BOAT SWITCH
 
   // EMERGENCY SWITCH
-  if (!tst_bit(CTRL_SWITCHES_PIN, EMERGENCY_SWITCH)) {
-    if (++count_emergency_state[ON] >= EMERGENCY_ON_TO_UPDATE) {
-      count_emergency_state[OFF] = 0;
-      system_flags.emergency = 1;
-    }
-  } else {
-    if (++count_emergency_state[OFF] >= EMERGENCY_ON_TO_UPDATE) {
-      count_emergency_state[ON] = 0;
-      system_flags.emergency = 0;
-    }
-  }
+  // if (!tst_bit(CTRL_SWITCHES_PIN, EMERGENCY_SWITCH)) {
+  //   if (++count_emergency_state[ON] >= EMERGENCY_ON_TO_UPDATE) {
+  //     count_emergency_state[OFF] = 0;
+  //     system_flags.emergency = 1;
+  //   }
+  // } else {
+  //   if (++count_emergency_state[OFF] >= EMERGENCY_ON_TO_UPDATE) {
+  //     count_emergency_state[ON] = 0;
+  //     system_flags.emergency = 0;
+  //   }
+  // }
 
   // EMERGENCY EXCLUSIVE ON HARDWARE TO MAC
   // This means emergency will be set as always "safe"=1
-  // system_flags.emergency = 1;
+  system_flags.emergency = 1;
   // END OF EMERGENCY SWITCH
 
   if (system_flags.boat_switch_on && system_flags.emergency)
@@ -410,31 +411,31 @@ inline void read_switches(void) {
   // TEST DIGITAL PINS AND FILTER THEM
 
   // DEAD MEN SWITCH
-  if (tst_bit(DMS_PIN, DMS)) {
-    if (++count_DMS_state[ON] >= DEAD_MEN_TO_UPDATE) {
-      count_DMS_state[OFF] = 0;
-      system_flags.dead_men_switch = 1;
-    }
-  } else {
-    if (++count_DMS_state[OFF] >= DEAD_MEN_TO_UPDATE) {
-      count_DMS_state[ON] = 0;
-      system_flags.dead_men_switch = 0;
-    }
-  }
+  // if (tst_bit(DMS_PIN, DMS)) {
+  // if (++count_DMS_state[ON] >= DEAD_MEN_TO_UPDATE) {
+  // count_DMS_state[OFF] = 0;
+  // system_flags.dead_men_switch = 1;
+  // }
+  // } else {
+  // if (++count_DMS_state[OFF] >= DEAD_MEN_TO_UPDATE) {
+  // count_DMS_state[ON] = 0;
+  // system_flags.dead_men_switch = 0;
+  // }
+  // }
   // DEADMAN EXCLUSIVE ON HARDWARE TO MAC
-  // This means deadman will be set as always "safe"=0
-  // system_flags.dead_men_switch =
+  // This means deadman will be set as always "safe"=1
+  system_flags.dead_men_switch = 1;
   // END OF DEAD MEN SWITCH
 
   // REVERSE SWITCH
   if (!tst_bit(REVERSE_SWITCH_PIN, REVERSE_SWITCH)) {
-    system_flags.reverse = 0;
-  } else {
     system_flags.reverse = 1;
+  } else {
+    system_flags.reverse = 0;
   }
   // END OF REVERSE SWITCH
 
-  if (!tst_bit(CTRL_SWITCHES_PIN, MCC_ON_SWITCH))
+  if (tst_bit(CTRL_SWITCHES_PIN, MCC_ON_SWITCH))
     system_flags.MCC_on = 1;
   else
     system_flags.MCC_on = 0;
@@ -502,22 +503,38 @@ void print_infos(void) {
 
   if (print_clk_div++ >= PRINT_INFOS_CLK_DIV) {
     print_clk_div = 0;
-    usart_send_string("\nTarget motor duty: ");
+    usart_send_string("\nState: ");
+    switch (state_machine) {
+    case STATE_INITIALIZING:
+      usart_send_string("INIT");
+      break;
+    case STATE_IDLE:
+      usart_send_string("IDLE");
+      break;
+    case STATE_RUNNING:
+      usart_send_string("RUNNING");
+      break;
+    case STATE_ERROR:
+      usart_send_string("ERROR");
+      break;
+    case STATE_RESET:
+      usart_send_string("RESET");
+      break;
+    default:
+      usart_send_string("UNKNOWN");
+      break;
+    }
+    usart_send_string(" -|| Target motor: ");
     usart_send_uint16(control.motor_PWM_target);
-    usart_send_string("\tTarger for MDE: ");
+    usart_send_string(" -|| Target MDE: ");
     usart_send_uint16(control.mde_steering_wheel_position);
-    usart_send_string("\tBoat on: ");
+    usart_send_string(" -|| Boat on: ");
     usart_send_uint8(system_flags.boat_on);
-    usart_send_string("\tMotor on: ");
+    usart_send_string(" -|| Motor on: ");
     usart_send_uint8(system_flags.motor_on);
-    usart_send_string("\tReverse flag: ");
+    usart_send_string(" -|| Rev. flag: ");
     usart_send_uint8(system_flags.reverse);
-    
-    // usart_send_uint8(system_flags.boat_switch_on);
-    // usart_send_char('0' + system_flags.motor_on);
-    // usart_send_char('0' + system_flags.MCS_on);
-    // usart_send_char('0' + system_flags.dead_men_switch);
-    // usart_send_char('0' + system_flags.emergency);
+
     switch (i++) {
     case 0:
       // usart_send_string("\ntestando: ");
