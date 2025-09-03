@@ -344,21 +344,21 @@ inline void read_boat_on(void) {
   // END OF BOAT SWITCH
 
   // EMERGENCY SWITCH
-  // if (!tst_bit(CTRL_SWITCHES_PIN, EMERGENCY_SWITCH)) {
-  //   if (++count_emergency_state[ON] >= EMERGENCY_ON_TO_UPDATE) {
-  //     count_emergency_state[OFF] = 0;
-  //     system_flags.emergency = 1;
-  //   }
-  // } else {
-  //   if (++count_emergency_state[OFF] >= EMERGENCY_ON_TO_UPDATE) {
-  //     count_emergency_state[ON] = 0;
-  //     system_flags.emergency = 0;
-  //   }
-  // }
+  if (!tst_bit(CTRL_SWITCHES_PIN, EMERGENCY_SWITCH)) {
+    if (++count_emergency_state[ON] >= EMERGENCY_ON_TO_UPDATE) {
+      count_emergency_state[OFF] = 0;
+      system_flags.emergency = 1;
+    }
+  } else {
+    if (++count_emergency_state[OFF] >= EMERGENCY_ON_TO_UPDATE) {
+      count_emergency_state[ON] = 0;
+      system_flags.emergency = 0;
+    }
+  }
 
   // EMERGENCY EXCLUSIVE ON HARDWARE TO MAC
   // This means emergency will be set as always "safe"=1
-  system_flags.emergency = 1;
+  //system_flags.emergency = 1;
   // END OF EMERGENCY SWITCH
 
   if (system_flags.boat_switch_on && system_flags.emergency)
@@ -411,20 +411,20 @@ inline void read_switches(void) {
   // TEST DIGITAL PINS AND FILTER THEM
 
   // DEAD MEN SWITCH
-  // if (tst_bit(DMS_PIN, DMS)) {
-  // if (++count_DMS_state[ON] >= DEAD_MEN_TO_UPDATE) {
-  // count_DMS_state[OFF] = 0;
-  // system_flags.dead_men_switch = 1;
-  // }
-  // } else {
-  // if (++count_DMS_state[OFF] >= DEAD_MEN_TO_UPDATE) {
-  // count_DMS_state[ON] = 0;
-  // system_flags.dead_men_switch = 0;
-  // }
-  // }
+  if (tst_bit(DMS_PIN, DMS)) {
+  if (++count_DMS_state[ON] >= DEAD_MEN_TO_UPDATE) {
+  count_DMS_state[OFF] = 0;
+  system_flags.dead_men_switch = 1;
+  }
+  } else {
+  if (++count_DMS_state[OFF] >= DEAD_MEN_TO_UPDATE) {
+  count_DMS_state[ON] = 0;
+  system_flags.dead_men_switch = 0;
+  }
+  }
   // DEADMAN EXCLUSIVE ON HARDWARE TO MAC
   // This means deadman will be set as always "safe"=1
-  system_flags.dead_men_switch = 1;
+  //system_flags.dead_men_switch = 1;
   // END OF DEAD MEN SWITCH
 
   // REVERSE SWITCH
