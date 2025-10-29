@@ -29,6 +29,9 @@ void can_app_extractor_mcs_relay(can_t *msg);
 void can_app_msg_extractors_switch(can_t *msg);
 // void can_app_extractor_mic17_state(can_t *msg);
 // void can_app_extractor_mic17_mcs(can_t *msg);
+void can_app_extractor_mcv25_state(can_t *msg);
+void can_app_extractor_mcv25_motor(can_t *msg);
+void can_app_extractor_mcv25_mde(can_t *msg);
 void check_can(void);
 
 #ifdef CAN_ON
