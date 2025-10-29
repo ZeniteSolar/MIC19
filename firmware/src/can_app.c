@@ -72,6 +72,14 @@ uint32_t can_app_send_mde_clk_div;
 uint32_t can_app_send_boat_clk_div;
 uint32_t can_app_send_pumps_clk_div;
 
+uint32_t can_app_send_state_clk_div_zenira;
+uint32_t can_app_send_motor_clk_div_zenira;
+uint32_t can_app_send_mde_clk_div_zenira;
+uint32_t can_app_send_boat_clk_div_zenira;
+uint32_t can_app_send_pumps_clk_div_zenira;
+
+uint8_t ctrl_bit_zenira = 0;
+
 /**
  * @brief Prints a can message via usart
  */
@@ -173,15 +181,25 @@ inline void can_app_send_motor(void)
 	msg.data[CAN_MSG_MIC19_MOTOR_I_BYTE] = (uint8_t)(control.motor_RAMP_target >> 2);
 #endif
 
-    msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] =
-        ((system_flags.motor_on) << CAN_MSG_MIC19_MOTOR_MOTOR_MOTOR_ON_BIT);
+    if(ctrl_bit_zenira){   
+        msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] =
+            ((system_flags_zenira.motor_on_zenira) << CAN_MSG_MIC19_MOTOR_MOTOR_MOTOR_ON_BIT);
 
-    msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] |=
-        ((system_flags.dead_men_switch) << CAN_MSG_MIC19_MOTOR_MOTOR_DMS_ON_BIT);
+        msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] |=
+            ((system_flags_zenira.dead_men_switch_zenira) << CAN_MSG_MIC19_MOTOR_MOTOR_DMS_ON_BIT);
 
-    msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] |=
-        ((system_flags.reverse) << CAN_MSG_MIC19_MOTOR_MOTOR_REVERSE_BIT);
+        msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] |=
+            ((system_flags_zenira.reverse_zenira) << CAN_MSG_MIC19_MOTOR_MOTOR_REVERSE_BIT);
+    } else {
+        msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] =
+            ((system_flags.motor_on) << CAN_MSG_MIC19_MOTOR_MOTOR_MOTOR_ON_BIT);
 
+        msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] |=
+            ((system_flags.dead_men_switch) << CAN_MSG_MIC19_MOTOR_MOTOR_DMS_ON_BIT);
+
+        msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] |=
+            ((system_flags.reverse) << CAN_MSG_MIC19_MOTOR_MOTOR_REVERSE_BIT);
+    }
     can_send_message(&msg);
 }
 
@@ -261,6 +279,60 @@ inline void can_app_extractor_mcs_relay(can_t *msg)
     }
 }
 
+inline void can_app_extractor_mcv25_state(can_t *msg){
+    if (msg->data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] == CAN_SIGNATURE_MCV25)
+    {
+        // Exemplo: extrair estado do módulo de direção
+        uint8_t state_byte = msg->data[CAN_MSG_MCV25_STATE_STATE_BYTE];
+        uint8_t error_byte = msg->data[CAN_MSG_MCV25_STATE_ERROR_BYTE];
+
+        // Atualiza máquina de estados local
+        // control.mcv25_state = state_byte;
+        // error_flags.mcv25 = error_byte;
+        
+        VERBOSE_MSG_CAN_APP(usart_send_string("MCV25 STATE updated\n"));
+        VERBOSE_MSG_CAN_APP(usart_send_string("state_byte = "));
+        VERBOSE_MSG_CAN_APP(usart_send_uint16(state_byte));
+        VERBOSE_MSG_CAN_APP(usart_send_string(" error = "));
+        VERBOSE_MSG_CAN_APP(usart_send_uint16(error_byte));
+        VERBOSE_MSG_CAN_APP(usart_send_char('\n'));
+    }
+}
+
+/**
+ * @brief extract the motor clk div from mcv25 mde message
+ * @param *msg pointer to the message to be extracted
+ */
+inline void can_app_extractor_mcv25_motor(can_t *msg){
+    if (msg->data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] == CAN_SIGNATURE_MCV25)
+    {
+        control.motor_PWM_target = (uint16_t)msg->data[CAN_MSG_MCV25_MOTOR_D_BYTE]
+        control.motor_RAMP_target = (uint16_t)msg->data[CAN_MSG_MCV25_MOTOR_I_BYTE]
+    }   
+
+    VERBOSE_MSG_CAN_APP(usart_send_string("can_app_send_motor_clk_div = "));
+    VERBOSE_MSG_CAN_APP(usart_send_uint32(can_app_send_motor_clk_div));
+    VERBOSE_MSG_CAN_APP(usart_send_char('\n'));
+}
+
+/**
+ * @brief extracts the steering wheel position from a mcv25 mde message
+ * @param *msg pointer to the message to be extracted
+ */
+inline void can_app_extractor_mcv25_mde(can_t *msg){
+
+    if (msg->data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] == CAN_SIGNATURE_MCV25)
+    {
+        control.mde_steering_wheel_position =
+            ((uint16_t)msg->data[CAN_MSG_MCV25_MDE_POSITION_H_BYTE] << 8) |
+            ((uint16_t)msg->data[CAN_MSG_MCV25_MDE_POSITION_L_BYTE]);
+    }
+
+    VERBOSE_MSG_CAN_APP(usart_send_string("can_app_send_mde_clk_div = "));
+    VERBOSE_MSG_CAN_APP(usart_send_uint32(can_app_send_mde_clk_div));
+    VERBOSE_MSG_CAN_APP(usart_send_char('\n'));
+}
+
 /**
  * @brief redirects a specific message extractor to a given message
  * @param *msg pointer to the message to be extracted
@@ -285,6 +357,36 @@ inline void can_app_msg_extractors_switch(can_t *msg)
                 break;
         }
     }
+    else if (msg->data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] == CAN_SIGNATURE_MCV25)
+    {
+        switch (msg->id)
+        {
+            case CAN_MSG_MCV25_STATE_ID:
+                VERBOSE_MSG_CAN_APP(usart_send_string("got a mcv25 state msg: "));
+                VERBOSE_MSG_CAN_APP(can_app_print_msg(msg));
+                can_app_extractor_mcv25_state(msg);
+                break;
+
+            case CAN_MSG_MCV25_MOTOR_ID:
+                VERBOSE_MSG_CAN_APP(usart_send_string("got a mcv25 motor msg: "));
+                VERBOSE_MSG_CAN_APP(can_app_print_msg(msg));
+                can_app_extractor_mcv25_motor(msg);
+                break;
+
+            case CAN_MSG_MCV25_MDE_ID:
+                VERBOSE_MSG_CAN_APP(usart_send_string("got a mcv25 mde msg: "));
+                VERBOSE_MSG_CAN_APP(can_app_print_msg(msg));
+                can_app_extractor_mcv25_mde(msg);
+                break;
+
+            default:
+#ifdef USART_ON
+                VERBOSE_MSG_CAN_APP(usart_send_string("got unknown mcv25 msg:\n"));
+#endif
+                VERBOSE_MSG_CAN_APP(can_app_print_msg(msg));
+                break;
+        }
+    }
 }
 
 /**
@@ -292,12 +394,13 @@ inline void can_app_msg_extractors_switch(can_t *msg)
  */
 inline void check_can(void)
 {
-
 	if (can_check_message())
 	{
+        VERBOSE_MSG_CAN_APP(usart_send_string("Mensagem recebida:\n"));
         can_t msg;
 		if (can_get_message(&msg))
 		{
+            VERBOSE_MSG_CAN_APP(can_app_print_msg(&msg)); // imprime sempre
             can_app_msg_extractors_switch(&msg);
         }
     }
