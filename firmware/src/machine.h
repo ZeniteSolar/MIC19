@@ -57,7 +57,7 @@ typedef enum state_machine{
 } state_machine_t;
 
 typedef union system_flags{
-    struct{
+    struct{ 
         uint8_t     boat_on                :1;
         uint8_t     boat_switch_on         :1;
         uint8_t     MCS_on                 :1;
@@ -70,6 +70,20 @@ typedef union system_flags{
     uint8_t   all__;
 } system_flags_t;
 
+// flags structure exclusivo da zenira
+typedef union system_flags_zenira{
+    struct{ 
+        uint8_t     boat_on_zenira          :1;
+        uint8_t     boat_switch_on_zenira   :1;
+        uint8_t     MCS_on_zenira           :1;
+        uint8_t     motor_on_zenira         :1;
+        uint8_t     MCC_on_zenira           :1;
+        uint8_t     dead_men_switch_zenira  :1;
+        uint8_t     emergency_zenira        :1;
+        uint8_t     reverse_zenira          :1;
+    };
+    uint8_t   all__;
+} system_flags_t_zenira;
 
 typedef union pump_flags{
     struct{
