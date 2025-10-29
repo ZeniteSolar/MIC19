@@ -16,7 +16,6 @@
 #include <util/delay.h>
 
 #include "conf.h"
-
 // safety limits for adc values
 // ---
 
@@ -45,7 +44,6 @@
 #ifdef CAN_ON
 #include "can.h"
 #include "can_app.h"
-extern const uint8_t can_filter[];
 #endif
 
 typedef enum state_machine{
@@ -68,7 +66,7 @@ typedef union system_flags{
         uint8_t     reverse                :1;
     };
     uint8_t   all__;
-} system_flags_t;
+}system_flags_t;
 
 // flags structure exclusivo da zenira
 typedef union system_flags_zenira{
@@ -83,7 +81,7 @@ typedef union system_flags_zenira{
         uint8_t     reverse_zenira          :1;
     };
     uint8_t   all__;
-} system_flags_t_zenira;
+}system_flags_zenira_t;
 
 typedef union pump_flags{
     struct{
@@ -160,6 +158,7 @@ extern volatile state_machine_t state_machine;
 extern volatile control_t control;
 extern volatile pump_flags_t pump_flags;
 extern volatile system_flags_t system_flags;
+extern volatile system_flags_zenira_t system_flags_zenira;
 extern volatile error_flags_t error_flags;
 extern volatile uint16_t charge_count_error;
 extern volatile uint8_t relay_clk;
@@ -171,5 +170,6 @@ extern volatile uint8_t reset_clk;
 
 // other variables
 extern volatile uint8_t led_clk_div;
+extern volatile uint8_t ctrl_bit_zenira;
 
 #endif /* ifndef MACHINE_H */

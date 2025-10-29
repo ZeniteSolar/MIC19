@@ -78,8 +78,6 @@ uint32_t can_app_send_mde_clk_div_zenira;
 uint32_t can_app_send_boat_clk_div_zenira;
 uint32_t can_app_send_pumps_clk_div_zenira;
 
-uint8_t ctrl_bit_zenira = 0;
-
 /**
  * @brief Prints a can message via usart
  */
@@ -299,6 +297,21 @@ inline void can_app_extractor_mcv25_state(can_t *msg){
     }
 }
 
+inline void can_app_extractor_mcv25_boat_state(can_t *msg){
+    if (msg->data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] == CAN_SIGNATURE_MCV25)
+    {
+        // Exemplo: extrair estado do módulo de direção
+        system_flags_zenira.boat_on_zenira = msg->data[CAN_MSG_MCV25_BOAT_STATE_BOAT_ON_BYTE];
+        uint8_t state_byte = msg->data[CAN_MSG_MCV25_STATE_STATE_BYTE];
+        
+        VERBOSE_MSG_CAN_APP(usart_send_string("MCV25 BOAT ON updated\n"));
+        VERBOSE_MSG_CAN_APP(usart_send_string("state_byte = "));
+        VERBOSE_MSG_CAN_APP(usart_send_uint16(state_byte));
+        VERBOSE_MSG_CAN_APP(usart_send_string(" boat_on = "));
+        VERBOSE_MSG_CAN_APP(usart_send_uint16(system_flags_zenira.boat_on_zenira));
+        VERBOSE_MSG_CAN_APP(usart_send_char('\n'));
+    }
+}
 /**
  * @brief extract the motor clk div from mcv25 mde message
  * @param *msg pointer to the message to be extracted
@@ -306,8 +319,8 @@ inline void can_app_extractor_mcv25_state(can_t *msg){
 inline void can_app_extractor_mcv25_motor(can_t *msg){
     if (msg->data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] == CAN_SIGNATURE_MCV25)
     {
-        control.motor_PWM_target = (uint16_t)msg->data[CAN_MSG_MCV25_MOTOR_D_BYTE]
-        control.motor_RAMP_target = (uint16_t)msg->data[CAN_MSG_MCV25_MOTOR_I_BYTE]
+        // control.motor_PWM_target = (uint16_t)msg->data[CAN_MSG_MCV25_MOTOR_D_BYTE];
+        // control.motor_RAMP_target = (uint16_t)msg->data[CAN_MSG_MCV25_MOTOR_I_BYTE];
     }   
 
     VERBOSE_MSG_CAN_APP(usart_send_string("can_app_send_motor_clk_div = "));
@@ -349,6 +362,8 @@ inline void can_app_msg_extractors_switch(can_t *msg)
                 VERBOSE_MSG_CAN_APP(usart_send_string("got a mcs msg: "));
                 VERBOSE_MSG_CAN_APP(can_app_print_msg(msg));
                 can_app_extractor_mcs_relay(msg);
+
+                __attribute__((fallthrough));
             default:
 #ifdef USART_ON
                 VERBOSE_MSG_CAN_APP(usart_send_string("got a unknown msg:\n "));
@@ -379,6 +394,11 @@ inline void can_app_msg_extractors_switch(can_t *msg)
                 can_app_extractor_mcv25_mde(msg);
                 break;
 
+            case CAN_MSG_MCV25_BOAT_STATE_ID:
+                VERBOSE_MSG_CAN_APP(usart_send_string("got a mcv25 boat msg: "));
+                VERBOSE_MSG_CAN_APP(can_app_print_msg(msg));
+                can_app_extractor_mcv25_boat_state(msg);
+                break;
             default:
 #ifdef USART_ON
                 VERBOSE_MSG_CAN_APP(usart_send_string("got unknown mcv25 msg:\n"));

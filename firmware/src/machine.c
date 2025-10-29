@@ -4,7 +4,7 @@ volatile state_machine_t state_machine;
 volatile control_t control;
 volatile pump_flags_t pump_flags;
 volatile system_flags_t system_flags;
-volatile system_flags_t_zenira system_flags_zenira;
+volatile system_flags_zenira_t system_flags_zenira;
 volatile error_flags_t error_flags;
 volatile uint16_t charge_count_error;
 volatile uint8_t relay_clk;
@@ -17,7 +17,7 @@ volatile uint16_t print_clk_div;
 volatile uint8_t led_clk_div;
 
 // Controle da zenira
-volatile uint8_t ctrl_bit;
+volatile uint8_t ctrl_bit_zenira;
 
 /**
  * @brief
@@ -334,7 +334,10 @@ inline void read_boat_on(void) {
   static uint8_t count_emergency_state[2] = {0, 0};
 
   // BOAT SWITCH
-  if (tst_bit(CTRL_SWITCHES_PIN, BOAT_ON_SWITCH)) {
+  if (ctrl_bit_zenira) {
+    // system_flags_zenira.motor_on_zenira = can_app_send_motor_clk_div_zenira;
+    system_flags.boat_switch_on = system_flags_zenira.boat_on_zenira;
+  } else if (tst_bit(CTRL_SWITCHES_PIN, BOAT_ON_SWITCH)) {
     if (++count_boat_state[ON] >= BOAT_ON_TO_UPDATE) {
       count_boat_state[OFF] = 0;
       system_flags.boat_switch_on = 1;
@@ -362,7 +365,7 @@ inline void read_boat_on(void) {
 
   // EMERGENCY EXCLUSIVE ON HARDWARE TO MAC
   // This means emergency will be set as always "safe"=1
-  //system_flags.emergency = 1;
+  // system_flags.emergency = 1;
   // END OF EMERGENCY SWITCH
 
   if (system_flags.boat_switch_on && system_flags.emergency)
@@ -385,6 +388,8 @@ inline void read_pump_switches(void) {
   else
     pump_flags.pump1_on = 1;
 
+  ctrl_bit_zenira = pump_flags.pump1_on;
+
   if (tst_bit(PUMPS_SWITCHES_PIN, PUMP2_ON_SWITCH))
     pump_flags.pump2_on = 0;
   else
@@ -399,10 +404,10 @@ inline void read_switches(void) {
   // TEST DIGITAL PINS AND FILTER THEM
 
   // MOTOR SWITCH
-  if(ctrl_bit){   
-    system_flags_zenira.motor_on_zenira = can_app_send_motor_clk_div_zenira;
-  }
-  else{
+  if (ctrl_bit_zenira) {
+    // system_flags_zenira.motor_on_zenira = can_app_send_motor_clk_div_zenira;
+    system_flags.motor_on = system_flags_zenira.motor_on_zenira;
+  } else {
     if (tst_bit(CTRL_SWITCHES_PIN, MOTOR_ON_SWITCH)) {
       if (++count_motor_state[ON] >= MOTOR_ON_TO_UPDATE) {
         count_motor_state[OFF] = 0;
@@ -423,19 +428,19 @@ inline void read_switches(void) {
 
   // DEAD MEN SWITCH
   if (tst_bit(DMS_PIN, DMS)) {
-  if (++count_DMS_state[ON] >= DEAD_MEN_TO_UPDATE) {
-  count_DMS_state[OFF] = 0;
-  system_flags.dead_men_switch = 1;
-  }
+    if (++count_DMS_state[ON] >= DEAD_MEN_TO_UPDATE) {
+      count_DMS_state[OFF] = 0;
+      system_flags.dead_men_switch = 1;
+    }
   } else {
-  if (++count_DMS_state[OFF] >= DEAD_MEN_TO_UPDATE) {
-  count_DMS_state[ON] = 0;
-  system_flags.dead_men_switch = 0;
-  }
+    if (++count_DMS_state[OFF] >= DEAD_MEN_TO_UPDATE) {
+      count_DMS_state[ON] = 0;
+      system_flags.dead_men_switch = 0;
+    }
   }
   // DEADMAN EXCLUSIVE ON HARDWARE TO MAC
   // This means deadman will be set as always "safe"=1
-  //system_flags.dead_men_switch = 1;
+  // system_flags.dead_men_switch = 1;
   // END OF DEAD MEN SWITCH
 
   // REVERSE SWITCH
@@ -545,6 +550,13 @@ void print_infos(void) {
     usart_send_uint8(system_flags.motor_on);
     usart_send_string(" -|| Rev. flag: ");
     usart_send_uint8(system_flags.reverse);
+    // usart_send_string(" -|| pump1: ");
+    // usart_send_uint8(pump_flags.pump1_on);
+    usart_send_string(" -|| zenira_control: ");
+    usart_send_uint8(ctrl_bit_zenira);
+    usart_send_string(" -|| zenira boat on: ");
+    usart_send_uint8(system_flags_zenira.boat_on_zenira);
+    
 
     switch (i++) {
     case 0:

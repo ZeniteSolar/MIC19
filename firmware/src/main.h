@@ -72,3 +72,7 @@
 #endif /*ifdef SLEEP_ON*/
 
 #endif /* ifndef MAIN_H */
+
+
+void init(void);
+int main(void);
