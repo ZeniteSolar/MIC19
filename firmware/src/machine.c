@@ -4,6 +4,7 @@ volatile state_machine_t state_machine;
 volatile control_t control;
 volatile pump_flags_t pump_flags;
 volatile system_flags_t system_flags;
+volatile system_flags_t_zenira system_flags_zenira;
 volatile error_flags_t error_flags;
 volatile uint16_t charge_count_error;
 volatile uint8_t relay_clk;
@@ -14,6 +15,9 @@ volatile uint8_t total_errors; // Contagem de ERROS
 
 volatile uint16_t print_clk_div;
 volatile uint8_t led_clk_div;
+
+// Controle da zenira
+volatile uint8_t ctrl_bit;
 
 /**
  * @brief
@@ -395,15 +399,22 @@ inline void read_switches(void) {
   // TEST DIGITAL PINS AND FILTER THEM
 
   // MOTOR SWITCH
-  if (tst_bit(CTRL_SWITCHES_PIN, MOTOR_ON_SWITCH)) {
-    if (++count_motor_state[ON] >= MOTOR_ON_TO_UPDATE) {
-      count_motor_state[OFF] = 0;
-      system_flags.motor_on = 1;
-    }
-  } else {
-    if (++count_motor_state[OFF] >= MOTOR_ON_TO_UPDATE) {
-      count_motor_state[ON] = 0;
-      system_flags.motor_on = 0;
+  if(ctrl_bit){   
+    system_flags_zenira.motor_on_zenira = can_app_send_motor_clk_div_zenira;
+  }
+  else{
+    if (tst_bit(CTRL_SWITCHES_PIN, MOTOR_ON_SWITCH)) {
+      if (++count_motor_state[ON] >= MOTOR_ON_TO_UPDATE) {
+        count_motor_state[OFF] = 0;
+        system_flags.motor_on = 1;
+        system_flags_zenira.motor_on_zenira = 1;
+      }
+    } else {
+      if (++count_motor_state[OFF] >= MOTOR_ON_TO_UPDATE) {
+        count_motor_state[ON] = 0;
+        system_flags.motor_on = 0;
+        system_flags_zenira.motor_on_zenira = 0;
+      }
     }
   }
   // END OF MOTOR SWITCH
