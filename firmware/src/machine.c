@@ -4,7 +4,6 @@ volatile state_machine_t state_machine;
 volatile control_t control;
 volatile pump_flags_t pump_flags;
 volatile system_flags_t system_flags;
-volatile system_flags_zenira_t system_flags_zenira;
 volatile error_flags_t error_flags;
 volatile uint16_t charge_count_error;
 volatile uint8_t relay_clk;
@@ -18,6 +17,8 @@ volatile uint8_t led_clk_div;
 
 // Controle da zenira
 volatile uint8_t ctrl_bit_zenira;
+volatile control_zenira_t control_zenira;
+volatile system_flags_zenira_t system_flags_zenira;
 
 /**
  * @brief
@@ -205,11 +206,20 @@ inline void print_error_flags(void) {
 }
 
 inline void read_and_check_adcs(void) {
-#ifdef ADC_ON
-  control.motor_PWM_target = MA_MOTOR_PWM_TARGET;
-  control.mde_steering_wheel_position = MA_MDE_POSITION_TARGET;
 
+  if(ctrl_bit_zenira) {
+    control.motor_PWM_target = control_zenira.motor_PWM_target_zenira;
+    control.mde_steering_wheel_position = control_zenira.mde_steering_wheel_position_zenira;
+  } else {
+#ifdef ADC_ON
+    control.motor_PWM_target = MA_MOTOR_PWM_TARGET;
+    control_zenira.motor_PWM_target_zenira = MA_MOTOR_PWM_TARGET;
+
+    control.mde_steering_wheel_position = MA_MDE_POSITION_TARGET;
+    control_zenira.mde_steering_wheel_position_zenira = MA_MDE_POSITION_TARGET;
 #endif
+  }
+
   //   switch (state_machine) {
   //   case STATE_INITIALIZING:
   //     check_battery_voltage();

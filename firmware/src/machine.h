@@ -113,6 +113,13 @@ typedef struct control
     uint16_t mde_steering_wheel_position;
 }control_t;
 
+typedef struct control_zenira
+{
+    uint16_t motor_PWM_target_zenira;
+    uint16_t motor_RAMP_target_zenira;
+    uint16_t MCC_POWER_target_zenira;
+    uint16_t mde_steering_wheel_position_zenira;
+}control_zenira_t;
 
 
 // machine checks
@@ -158,7 +165,6 @@ extern volatile state_machine_t state_machine;
 extern volatile control_t control;
 extern volatile pump_flags_t pump_flags;
 extern volatile system_flags_t system_flags;
-extern volatile system_flags_zenira_t system_flags_zenira;
 extern volatile error_flags_t error_flags;
 extern volatile uint16_t charge_count_error;
 extern volatile uint8_t relay_clk;
@@ -168,8 +174,12 @@ extern volatile uint8_t machine_clk_divider;
 extern volatile uint8_t total_errors;           // Contagem de ERROS
 extern volatile uint8_t reset_clk;
 
+// Zenira Variables
+extern volatile uint8_t ctrl_bit_zenira;
+extern volatile control_zenira_t control_zenira;
+extern volatile system_flags_zenira_t system_flags_zenira;
+
 // other variables
 extern volatile uint8_t led_clk_div;
-extern volatile uint8_t ctrl_bit_zenira;
 
 #endif /* ifndef MACHINE_H */

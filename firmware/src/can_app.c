@@ -112,35 +112,35 @@ inline void can_app_task(void)
 
 	if (can_app_send_state_clk_div++ >= CAN_APP_SEND_STATE_CLK_DIV)
 	{
-        VERBOSE_MSG_CAN_APP(usart_send_string("state msg was sent.\n"));
+        // VERBOSE_MSG_CAN_APP(usart_send_string("state msg was sent.\n"));
         can_app_send_state();
         can_app_send_state_clk_div = 0;
     }
 
 	if (can_app_send_motor_clk_div++ >= CAN_APP_SEND_MOTOR_CLK_DIV)
 	{
-        VERBOSE_MSG_CAN_APP(usart_send_string("motor msg was sent.\n"));
+        // VERBOSE_MSG_CAN_APP(usart_send_string("motor msg was sent.\n"));
         can_app_send_motor();
         can_app_send_motor_clk_div = 0;
     }
 
 	if (can_app_send_boat_clk_div++ >= CAN_APP_SEND_BOAT_CLK_DIV)
 	{
-        VERBOSE_MSG_CAN_APP(usart_send_string("boat msg was sent.\n"));
+        // VERBOSE_MSG_CAN_APP(usart_send_string("boat msg was sent.\n"));
         can_app_send_boat();
         can_app_send_boat_clk_div = 0;
     }
 
 	if (can_app_send_pumps_clk_div++ >= CAN_APP_SEND_PUMPS_CLK_DIV)
 	{
-        VERBOSE_MSG_CAN_APP(usart_send_string("pumps msg was sent.\n"));
+        // VERBOSE_MSG_CAN_APP(usart_send_string("pumps msg was sent.\n"));
         can_app_send_pumps();
         can_app_send_pumps_clk_div = 0;
     }
 
 	if (can_app_send_mde_clk_div++ >= CAN_APP_SEND_MDE_CLK_DIV)
 	{
-        VERBOSE_MSG_CAN_APP(usart_send_string("steering wheel msg was sent.\n"));
+        // VERBOSE_MSG_CAN_APP(usart_send_string("steering wheel msg was sent.\n"));
         can_app_send_steering_wheel();
         can_app_send_mde_clk_div = 0;
     }
@@ -159,8 +159,8 @@ inline void can_app_send_state(void)
 
     can_send_message(&msg);
 
-    VERBOSE_MSG_CAN_APP(usart_send_string("state msg was send.\n"));
-    VERBOSE_MSG_CAN_APP(can_app_print_msg(&msg));
+    // VERBOSE_MSG_CAN_APP(usart_send_string("state msg was send.\n"));
+    // VERBOSE_MSG_CAN_APP(can_app_print_msg(&msg));
 }
 
 inline void can_app_send_motor(void)
@@ -271,9 +271,9 @@ inline void can_app_extractor_mcs_relay(can_t *msg)
             system_flags.MCS_on = 0;
         }
 
-        VERBOSE_MSG_CAN_APP(usart_send_string("boat on bit: "));
-        VERBOSE_MSG_CAN_APP(usart_send_uint16(system_flags.boat_on));
-        VERBOSE_MSG_CAN_APP(usart_send_char('\n'));
+        // VERBOSE_MSG_CAN_APP(usart_send_string("boat on bit: "));
+        // VERBOSE_MSG_CAN_APP(usart_send_uint16(system_flags.boat_on));
+        // VERBOSE_MSG_CAN_APP(usart_send_char('\n'));
     }
 }
 
@@ -332,19 +332,20 @@ inline void can_app_extractor_mcv25_motor(can_t *msg){
  * @brief extracts the steering wheel position from a mcv25 mde message
  * @param *msg pointer to the message to be extracted
  */
-inline void can_app_extractor_mcv25_mde(can_t *msg){
+inline void can_app_extractor_mcv25_mde(can_t *msg)
+{
+    uint8_t pos_scaled = msg->data[CAN_MSG_MCV25_MDE_POSITION_L_BYTE];
+    uint16_t pos_raw = (pos_scaled * 789) / 255;
 
-    if (msg->data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] == CAN_SIGNATURE_MCV25)
-    {
-        control.mde_steering_wheel_position =
-            ((uint16_t)msg->data[CAN_MSG_MCV25_MDE_POSITION_H_BYTE] << 8) |
-            ((uint16_t)msg->data[CAN_MSG_MCV25_MDE_POSITION_L_BYTE]);
-    }
+    control_zenira.mde_steering_wheel_position_zenira = pos_raw;
 
-    VERBOSE_MSG_CAN_APP(usart_send_string("can_app_send_mde_clk_div = "));
-    VERBOSE_MSG_CAN_APP(usart_send_uint32(can_app_send_mde_clk_div));
-    VERBOSE_MSG_CAN_APP(usart_send_char('\n'));
+#ifdef DEBUG_CAN
+    usart_send_string("CAN MDE pos: ");
+    usart_send_uint16(pos_raw);
+    usart_send_char('\n');
+#endif
 }
+
 
 /**
  * @brief redirects a specific message extractor to a given message
@@ -359,16 +360,16 @@ inline void can_app_msg_extractors_switch(can_t *msg)
 		{
 
             case CAN_MSG_MCS19_START_STAGES_ID:
-                VERBOSE_MSG_CAN_APP(usart_send_string("got a mcs msg: "));
-                VERBOSE_MSG_CAN_APP(can_app_print_msg(msg));
+                // VERBOSE_MSG_CAN_APP(usart_send_string("got a mcs msg: "));
+                // VERBOSE_MSG_CAN_APP(can_app_print_msg(msg));
                 can_app_extractor_mcs_relay(msg);
 
                 __attribute__((fallthrough));
             default:
 #ifdef USART_ON
-                VERBOSE_MSG_CAN_APP(usart_send_string("got a unknown msg:\n "));
+                //VERBOSE_MSG_CAN_APP(usart_send_string("got a unknown msg:\n "));
 #endif
-                VERBOSE_MSG_CAN_APP(can_app_print_msg(msg));
+                //VERBOSE_MSG_CAN_APP(can_app_print_msg(msg));
                 break;
         }
     }
@@ -399,6 +400,7 @@ inline void can_app_msg_extractors_switch(can_t *msg)
                 VERBOSE_MSG_CAN_APP(can_app_print_msg(msg));
                 can_app_extractor_mcv25_boat_state(msg);
                 break;
+
             default:
 #ifdef USART_ON
                 VERBOSE_MSG_CAN_APP(usart_send_string("got unknown mcv25 msg:\n"));
@@ -416,11 +418,11 @@ inline void check_can(void)
 {
 	if (can_check_message())
 	{
-        VERBOSE_MSG_CAN_APP(usart_send_string("Mensagem recebida:\n"));
+        // VERBOSE_MSG_CAN_APP(usart_send_string("Mensagem recebida:\n"));
         can_t msg;
 		if (can_get_message(&msg))
 		{
-            VERBOSE_MSG_CAN_APP(can_app_print_msg(&msg)); // imprime sempre
+            // VERBOSE_MSG_CAN_APP(can_app_print_msg(&msg)); // imprime sempre
             can_app_msg_extractors_switch(&msg);
         }
     }

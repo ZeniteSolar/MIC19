@@ -49,4 +49,10 @@ extern uint32_t can_app_send_mde_clk_div;
 extern uint32_t can_app_send_boat_clk_div;
 extern uint32_t can_app_send_pumps_clk_div;
 
+extern uint32_t can_app_send_state_clk_div_zenira;
+extern uint32_t can_app_send_motor_clk_div_zenira;
+extern uint32_t can_app_send_mde_clk_div_zenira;
+extern uint32_t can_app_send_boat_clk_div_zenira;
+extern uint32_t can_app_send_pumps_clk_div_zenira;
+
 #endif /* ifndef CAN_APP_H */
