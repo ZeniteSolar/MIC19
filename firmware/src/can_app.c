@@ -65,7 +65,7 @@ inline void can_app_extractor_mic17_mcs(can_t *msg)
 */
 
 #include "can_app.h"
-
+#define MOTOR_VERBOSE
 uint32_t can_app_send_state_clk_div;
 uint32_t can_app_send_motor_clk_div;
 uint32_t can_app_send_mde_clk_div;
@@ -179,25 +179,15 @@ inline void can_app_send_motor(void)
 	msg.data[CAN_MSG_MIC19_MOTOR_I_BYTE] = (uint8_t)(control.motor_RAMP_target >> 2);
 #endif
 
-    if(ctrl_bit_zenira){   
-        msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] =
-            ((system_flags_zenira.motor_on_zenira) << CAN_MSG_MIC19_MOTOR_MOTOR_MOTOR_ON_BIT);
+    msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] =
+        ((system_flags.motor_on) << CAN_MSG_MIC19_MOTOR_MOTOR_MOTOR_ON_BIT);
 
-        msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] |=
-            ((system_flags_zenira.dead_men_switch_zenira) << CAN_MSG_MIC19_MOTOR_MOTOR_DMS_ON_BIT);
+    msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] |=
+        ((system_flags.dead_men_switch) << CAN_MSG_MIC19_MOTOR_MOTOR_DMS_ON_BIT);
 
-        msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] |=
-            ((system_flags_zenira.reverse_zenira) << CAN_MSG_MIC19_MOTOR_MOTOR_REVERSE_BIT);
-    } else {
-        msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] =
-            ((system_flags.motor_on) << CAN_MSG_MIC19_MOTOR_MOTOR_MOTOR_ON_BIT);
+    msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] |=
+        ((system_flags.reverse) << CAN_MSG_MIC19_MOTOR_MOTOR_REVERSE_BIT);
 
-        msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] |=
-            ((system_flags.dead_men_switch) << CAN_MSG_MIC19_MOTOR_MOTOR_DMS_ON_BIT);
-
-        msg.data[CAN_MSG_MIC19_MOTOR_MOTOR_BYTE] |=
-            ((system_flags.reverse) << CAN_MSG_MIC19_MOTOR_MOTOR_REVERSE_BIT);
-    }
     can_send_message(&msg);
 }
 
@@ -280,6 +270,9 @@ inline void can_app_extractor_mcs_relay(can_t *msg)
 inline void can_app_extractor_mcv25_state(can_t *msg){
     if (msg->data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] == CAN_SIGNATURE_MCV25)
     {
+    VERBOSE_MSG_CAN_APP(usart_send_string("can_app_send_motor_clk_div = "));
+    VERBOSE_MSG_CAN_APP(usart_send_uint32(can_app_send_motor_clk_div));
+    VERBOSE_MSG_CAN_APP(usart_send_char('\n'));
         // Exemplo: extrair estado do módulo de direção
         uint8_t state_byte = msg->data[CAN_MSG_MCV25_STATE_STATE_BYTE];
         uint8_t error_byte = msg->data[CAN_MSG_MCV25_STATE_ERROR_BYTE];
@@ -312,40 +305,108 @@ inline void can_app_extractor_mcv25_boat_state(can_t *msg){
         VERBOSE_MSG_CAN_APP(usart_send_char('\n'));
     }
 }
+
 /**
  * @brief extract the motor clk div from mcv25 mde message
  * @param *msg pointer to the message to be extracted
  */
 inline void can_app_extractor_mcv25_motor(can_t *msg){
-    if (msg->data[CAN_MSG_GENERIC_STATE_SIGNATURE_BYTE] == CAN_SIGNATURE_MCV25)
-    {
-        // control.motor_PWM_target = (uint16_t)msg->data[CAN_MSG_MCV25_MOTOR_D_BYTE];
-        // control.motor_RAMP_target = (uint16_t)msg->data[CAN_MSG_MCV25_MOTOR_I_BYTE];
-    }   
+    // Valor é limitado em read_and_check_adcs do machine.c
+    // Aqui é feita apenas a conversão para que os valores estejam condizentes
+    #define MOTOR_PWM_MAX_VALUE 1023               // Maximum motor PWM value (10-bit ADC)
 
-    VERBOSE_MSG_CAN_APP(usart_send_string("can_app_send_motor_clk_div = "));
-    VERBOSE_MSG_CAN_APP(usart_send_uint32(can_app_send_motor_clk_div));
-    VERBOSE_MSG_CAN_APP(usart_send_char('\n'));
+    if (msg->data[CAN_MSG_MCV25_MOTOR_SIGNATURE_BYTE] == CAN_SIGNATURE_MCV25){
+        system_flags_zenira.motor_on_zenira = msg->data[CAN_MSG_MCV25_MOTOR_MOTOR_BYTE];
+        // Convert from CAN range (0-100) to ADC range (0-1023)
+        control_zenira.motor_PWM_target_zenira = ((uint16_t)msg->data[CAN_MSG_MCV25_MOTOR_D_BYTE] * MOTOR_PWM_MAX_VALUE) / 100;
+        control_zenira.motor_RAMP_target_zenira = ((uint16_t)msg->data[CAN_MSG_MCV25_MOTOR_I_BYTE] * MOTOR_PWM_MAX_VALUE) / 100;
+    }
+    // control_zenira.motor_RAMP_target = (uint16_t)msg->data[CAN_MSG_MCV25_MOTOR_I_BYTE];
 }
 
 /**
  * @brief extracts the steering wheel position from a mcv25 mde message
  * @param *msg pointer to the message to be extracted
+ * 
+ * Message format:
+ * - POSITION_H_BYTE: direction (0 = left/bombordo, 1 = right/estibordo)
+ * - POSITION_L_BYTE: angle in degrees (0-90) - used as incremental delta
+ * 
+ * Center position (angle=0) = 512 (straight ahead)
+ * The angle is applied as an increment from current position.
+ * Direction indicates which way to move:
+ * - 0 (left): decreases position (towards MIN_POSITION)
+ * - 1 (right): increases position (towards MAX_POSITION)
+ * 
+ * Threshold prevents reaching the extreme bounds - valid range is [MIN_POS+THRESHOLD, MAX_POS-THRESHOLD]
  */
 inline void can_app_extractor_mcv25_mde(can_t *msg)
 {
-    uint8_t pos_scaled = msg->data[CAN_MSG_MCV25_MDE_POSITION_L_BYTE];
-    uint16_t pos_raw = (pos_scaled * 789) / 255;
+    #define CENTER_POSITION 512
+    #define MAX_POSITION 1024
+    #define MIN_POSITION 0
+    #define THRESHOLD 30
 
-    control_zenira.mde_steering_wheel_position_zenira = pos_raw;
+    #define MIN_ALLOWED (MIN_POSITION + THRESHOLD)
+    #define MAX_ALLOWED (MAX_POSITION - THRESHOLD)
+
+    uint8_t direction = msg->data[CAN_MSG_MCV25_MDE_POSITION_H_BYTE] & 0x01;
+    uint8_t angle = msg->data[CAN_MSG_MCV25_MDE_POSITION_L_BYTE];
+    
+    // Clamp angle to maximum 90 degrees
+    if (angle > 90) angle = 90;
+    
+    uint16_t current_pos = control_zenira.mde_steering_wheel_position_zenira;
+    uint16_t new_pos = current_pos;
+    
+    // If angle is 0, set to center position (straight ahead)
+    if (angle == 0) {
+        new_pos = CENTER_POSITION;
+    } else {
+        // Convert angle (1-90 degrees) to delta value (1-512)
+        uint16_t delta = ((uint16_t)angle * CENTER_POSITION) / 90;
+        
+        // Apply delta with clamping
+        if (direction == 0) {
+            // Left (bombordo)
+            if (delta > (current_pos - MIN_ALLOWED)) {
+                new_pos = MIN_ALLOWED; // Delta is too large, clamp to MIN_ALLOWED
+            } else {
+                new_pos = current_pos - delta; // Delta is safe, apply it
+            }
+        } 
+        else {
+            // Right (estibordo)
+            if (delta > (MAX_ALLOWED - current_pos)) {
+                new_pos = MAX_ALLOWED; // Delta is too large, clamp to MAX_ALLOWED
+            } else {
+                new_pos = current_pos + delta; // Delta is safe, apply it
+            }
+        }
+    }
+    
+    // Final safety check (should never be needed with preventive clamping)
+    if (new_pos < MIN_ALLOWED) new_pos = MIN_ALLOWED;
+    if (new_pos > MAX_ALLOWED) new_pos = MAX_ALLOWED;
+    
+    control_zenira.mde_steering_wheel_position_zenira = new_pos;
 
 #ifdef DEBUG_CAN
-    usart_send_string("CAN MDE pos: ");
-    usart_send_uint16(pos_raw);
+    usart_send_string("CAN MDE - Angle: ");
+    usart_send_uint16(angle);
+    usart_send_string("° Direction: ");
+    usart_send_uint16(direction);
+    usart_send_string(" (");
+    usart_send_string(direction == 0 ? "left" : "right");
+    usart_send_string(") Delta: ");
+    usart_send_uint16((angle * CENTER_POSITION) / 90);
+    usart_send_string(" Current: ");
+    usart_send_uint16(current_pos);
+    usart_send_string(" -> New: ");
+    usart_send_uint16(new_pos);
     usart_send_char('\n');
 #endif
 }
-
 
 /**
  * @brief redirects a specific message extractor to a given message

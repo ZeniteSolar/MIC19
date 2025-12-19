@@ -199,25 +199,105 @@ inline void print_system_flags(void) {
 /**
  * @brief prints the error flags
  */
-
 inline void print_error_flags(void) {
   // VERBOSE_MSG_MACHINE(usart_send_string(" errFl: "));
   // VERBOSE_MSG_MACHINE(usart_send_char(48+error_flags.no_canbus));
 }
 
 inline void read_and_check_adcs(void) {
+  // Sensitivity thresholds and safety limits
+  #define MOTOR_PWM_ZENIRA_THRESHOLD 15    // Minimum change to detect pilot input on throttle
+  #define MDE_STEERING_ZENIRA_THRESHOLD 15 // Minimum change to detect pilot input on steering
+  #define MDE_STEERING_MAX 950            // Maximum steering value to prevent jamming
+  #define MOTOR_PWM_MAX 1023               // Maximum motor PWM value (10-bit ADC)
 
-  if(ctrl_bit_zenira) {
-    control.motor_PWM_target = control_zenira.motor_PWM_target_zenira;
-    control.mde_steering_wheel_position = control_zenira.mde_steering_wheel_position_zenira;
-  } else {
+  static uint16_t motor_pwm_previous = 0;
+  static uint16_t mde_steering_previous = 0;
+  uint16_t motor_pwm_current;
+  uint16_t mde_steering_current;
+  uint16_t motor_pwm_delta;
+  uint16_t mde_steering_delta;
+  uint8_t motor_pwm_changed = 0;
+  uint8_t mde_steering_changed = 0;
+
 #ifdef ADC_ON
-    control.motor_PWM_target = MA_MOTOR_PWM_TARGET;
-    control_zenira.motor_PWM_target_zenira = MA_MOTOR_PWM_TARGET;
-
-    control.mde_steering_wheel_position = MA_MDE_POSITION_TARGET;
-    control_zenira.mde_steering_wheel_position_zenira = MA_MDE_POSITION_TARGET;
+  // Read current ADC values
+  motor_pwm_current = MA_MOTOR_PWM_TARGET;
+  mde_steering_current = MA_MDE_POSITION_TARGET;
+#else
+  motor_pwm_current = control.motor_PWM_target;
+  mde_steering_current = control.mde_steering_wheel_position;
 #endif
+
+  // Safety: Clamp steering to maximum value to prevent jamming
+  if (mde_steering_current > MDE_STEERING_MAX) {
+    mde_steering_current = MDE_STEERING_MAX;
+  }
+
+  // Safety: Clamp motor PWM to maximum value
+  if (motor_pwm_current > MOTOR_PWM_MAX) {
+    motor_pwm_current = MOTOR_PWM_MAX;
+  }
+
+  // Calculate change magnitude for motor PWM
+  if (motor_pwm_current > motor_pwm_previous) {
+    motor_pwm_delta = motor_pwm_current - motor_pwm_previous;
+  } else {
+    motor_pwm_delta = motor_pwm_previous - motor_pwm_current;
+  }
+
+  // Calculate change magnitude for steering position
+  if (mde_steering_current > mde_steering_previous) {
+    mde_steering_delta = mde_steering_current - mde_steering_previous;
+  } else {
+    mde_steering_delta = mde_steering_previous - mde_steering_current;
+  }
+
+  // Motor PWM logic
+  if (ctrl_bit_zenira) {
+    // Zenira is active: only override if pilot movement exceeds threshold
+    if (motor_pwm_delta > MOTOR_PWM_ZENIRA_THRESHOLD) {
+      if(motor_pwm_current < MOTOR_PWM_ZENIRA_THRESHOLD) {
+        // Below threshold: cut motor command to zero
+        control.motor_PWM_target = 0;
+        control_zenira.motor_PWM_target_zenira = 0;
+        motor_pwm_previous = 0;
+      } 
+      else {
+        // Pilot moved significantly: accept pilot input
+        control.motor_PWM_target = motor_pwm_current;
+        control_zenira.motor_PWM_target_zenira = motor_pwm_current;
+        motor_pwm_previous = motor_pwm_current;
+      }
+    } 
+    else {
+      // Small or no change: keep zenira control
+      control.motor_PWM_target = control_zenira.motor_PWM_target_zenira;
+    }
+  } else {
+    // Zenira is inactive: accept all pilot changes
+    control.motor_PWM_target = motor_pwm_current;
+    control_zenira.motor_PWM_target_zenira = motor_pwm_current;
+    motor_pwm_previous = motor_pwm_current;
+  }
+
+  // Steering position logic
+  if (ctrl_bit_zenira) {
+    // Zenira is active: only override if pilot movement exceeds sensitivity
+    if (mde_steering_delta > MDE_STEERING_ZENIRA_THRESHOLD) {
+      // Pilot moved significantly: accept pilot input
+      control.mde_steering_wheel_position = mde_steering_current;
+      control_zenira.mde_steering_wheel_position_zenira = mde_steering_current;
+      mde_steering_previous = mde_steering_current;
+    } else {
+      // Small or no change: keep zenira control
+      control.mde_steering_wheel_position = control_zenira.mde_steering_wheel_position_zenira;
+    }
+  } else {
+    // Zenira is inactive: accept all changes (even small ones)
+    control.mde_steering_wheel_position = mde_steering_current;
+    control_zenira.mde_steering_wheel_position_zenira = mde_steering_current;
+    mde_steering_previous = mde_steering_current;
   }
 
   //   switch (state_machine) {
@@ -271,11 +351,14 @@ inline void task_idle(void) {
 
   read_pump_switches();
 
+  // Read DMS to keep it updated for display
+  read_switches();
+
 #ifdef CHECK_MCS_ON
-  if (system_flags.MCS_on && system_flags.boat_on)
+  if (system_flags.MCS_on && system_flags.boat_on && system_flags.dead_men_switch)
     set_state_running();
 #else
-  if (system_flags.boat_on)
+  if (system_flags.boat_on && system_flags.dead_men_switch)
     set_state_running();
 #endif
 }
@@ -285,9 +368,9 @@ inline void task_idle(void) {
  */
 inline void task_running(void) {
 
-  read_boat_on();
-
   read_switches();
+
+  read_boat_on();
 
   read_pump_switches();
 
@@ -302,7 +385,8 @@ inline void task_running(void) {
   // buzzer(4, 8, 0);
 #endif // BUZZER_ON
 
-  if (!system_flags.boat_on)
+  // Dead Men Switch is mandatory during operation
+  if (!system_flags.boat_on || !system_flags.dead_men_switch)
     set_state_idle();
 }
 
@@ -342,21 +426,42 @@ inline void read_boat_on(void) {
   enum { ON, OFF };
   static uint8_t count_boat_state[2] = {0, 0};
   static uint8_t count_emergency_state[2] = {0, 0};
+  static uint8_t boat_switch_on_previous = 0;  // To detect edge transitions
+  static uint8_t boat_switch_on_previous_zenira = 0;  // To detect zenira activation
+  static uint8_t ctrl_bit_zenira_previous = 0; // To detect zenira control changes
+  uint8_t boat_switch_on_edge = 0;  // Flag for edge detection
 
-  // BOAT SWITCH
-  if (ctrl_bit_zenira) {
-    // system_flags_zenira.motor_on_zenira = can_app_send_motor_clk_div_zenira;
-    system_flags.boat_switch_on = system_flags_zenira.boat_on_zenira;
-  } else if (tst_bit(CTRL_SWITCHES_PIN, BOAT_ON_SWITCH)) {
+  // BOAT SWITCH - Always read the physical switch
+  if (tst_bit(CTRL_SWITCHES_PIN, BOAT_ON_SWITCH)) {
     if (++count_boat_state[ON] >= BOAT_ON_TO_UPDATE) {
       count_boat_state[OFF] = 0;
       system_flags.boat_switch_on = 1;
+      system_flags_zenira.boat_switch_on_zenira = 1;
     }
   } else {
     if (++count_boat_state[OFF] >= BOAT_ON_TO_UPDATE) {
       count_boat_state[ON] = 0;
       system_flags.boat_switch_on = 0;
+      system_flags_zenira.boat_switch_on_zenira = 0;
     }
+  }
+
+  // Detect edge transition (ON->OFF or OFF->ON) on physical switch
+  if (system_flags.boat_switch_on != boat_switch_on_previous) {
+    boat_switch_on_edge = 1;
+    boat_switch_on_previous = system_flags.boat_switch_on;
+  }
+
+  // Sync boat_switch_on_previous when zenira state changes to avoid false edges
+  if (system_flags_zenira.boat_on_zenira != boat_switch_on_previous_zenira) {
+    boat_switch_on_previous = system_flags.boat_switch_on;
+    boat_switch_on_previous_zenira = system_flags_zenira.boat_on_zenira;
+  }
+
+  if(ctrl_bit_zenira != ctrl_bit_zenira_previous) {
+    // Zenira control state changed, sync previous switch state
+    boat_switch_on_edge = 1; // Prevent edge detection on control change
+    ctrl_bit_zenira_previous = ctrl_bit_zenira;
   }
   // END OF BOAT SWITCH
 
@@ -365,11 +470,14 @@ inline void read_boat_on(void) {
     if (++count_emergency_state[ON] >= EMERGENCY_ON_TO_UPDATE) {
       count_emergency_state[OFF] = 0;
       system_flags.emergency = 1;
+      system_flags_zenira.emergency_zenira = 1;
     }
-  } else {
+  } 
+  else {
     if (++count_emergency_state[OFF] >= EMERGENCY_ON_TO_UPDATE) {
       count_emergency_state[ON] = 0;
       system_flags.emergency = 0;
+      system_flags_zenira.emergency_zenira = 0;
     }
   }
 
@@ -378,10 +486,27 @@ inline void read_boat_on(void) {
   // system_flags.emergency = 1;
   // END OF EMERGENCY SWITCH
 
-  if (system_flags.boat_switch_on && system_flags.emergency)
-    system_flags.boat_on = 1;
-  else
+  // boat_on logic: 
+  // Zenira controls normally, but pilot switch edge transition has priority
+  // When pilot moves the switch, boat_on follows the switch position once
+  // Then zenira can control again
+  
+  if (system_flags.emergency) {
+    // Emergency is active - allow boat control
+    if (boat_switch_on_edge) {
+      // Pilot moved the switch: follow it
+      system_flags.boat_on = system_flags.boat_switch_on;
+      system_flags_zenira.boat_on_zenira = system_flags.boat_on;
+    } else if (ctrl_bit_zenira) {
+      // No switch movement: zenira controls
+      system_flags.boat_on = system_flags_zenira.boat_on_zenira;
+    }
+    // If ctrl_bit_zenira is not active and no edge, keep current state
+  } else {
+    // Emergency not active: boat must be OFF
     system_flags.boat_on = 0;
+    system_flags_zenira.boat_on_zenira = 0;
+  }
 }
 
 inline void reset_switches(void) {
@@ -389,14 +514,19 @@ inline void reset_switches(void) {
   system_flags.dead_men_switch = 0;
   system_flags.MCC_on = 0;
   system_flags.emergency = 0;
+
+  system_flags_zenira.motor_on_zenira = 0;
+  system_flags_zenira.dead_men_switch_zenira = 0;
+  system_flags_zenira.MCC_on_zenira = 0;
+  system_flags_zenira.emergency_zenira = 0;
 }
 
 inline void read_pump_switches(void) {
 
   if (tst_bit(PUMPS_SWITCHES_PIN, PUMP1_ON_SWITCH))
-    pump_flags.pump1_on = 0;
-  else
     pump_flags.pump1_on = 1;
+  else
+    pump_flags.pump1_on = 0;
 
   ctrl_bit_zenira = pump_flags.pump1_on;
 
@@ -411,26 +541,50 @@ inline void read_switches(void) {
   static uint8_t count_motor_state[2] = {0, 0};
   static uint8_t count_DMS_state[2] = {0, 0};
 
+  static uint8_t motor_on_current = 0;
+  static uint8_t motor_on_previous = 0;  // To detect edge transitions on physical switch
+  static uint8_t motor_on_previous_zenira = 0;  // To detect zenira state changes
+  uint8_t motor_on_edge = 0;  // Flag for edge detection
+
+
   // TEST DIGITAL PINS AND FILTER THEM
 
   // MOTOR SWITCH
-  if (ctrl_bit_zenira) {
-    // system_flags_zenira.motor_on_zenira = can_app_send_motor_clk_div_zenira;
-    system_flags.motor_on = system_flags_zenira.motor_on_zenira;
-  } else {
-    if (tst_bit(CTRL_SWITCHES_PIN, MOTOR_ON_SWITCH)) {
-      if (++count_motor_state[ON] >= MOTOR_ON_TO_UPDATE) {
-        count_motor_state[OFF] = 0;
-        system_flags.motor_on = 1;
-        system_flags_zenira.motor_on_zenira = 1;
-      }
-    } else {
-      if (++count_motor_state[OFF] >= MOTOR_ON_TO_UPDATE) {
-        count_motor_state[ON] = 0;
-        system_flags.motor_on = 0;
-        system_flags_zenira.motor_on_zenira = 0;
-      }
+  if (tst_bit(CTRL_SWITCHES_PIN, MOTOR_ON_SWITCH)) {
+    if (++count_motor_state[ON] >= MOTOR_ON_TO_UPDATE) {
+      count_motor_state[OFF] = 0;
+      motor_on_current = 1;
     }
+  } else {
+    if (++count_motor_state[OFF] >= MOTOR_ON_TO_UPDATE) {
+      count_motor_state[ON] = 0;
+      motor_on_current = 0;
+    }
+  }
+
+  // Detect edge transition (ON->OFF or OFF->ON) on physical switch ONLY
+  if (motor_on_current != motor_on_previous) {
+    motor_on_edge = 1;
+    motor_on_previous = motor_on_current;
+    motor_on_previous_zenira = motor_on_current; // Sync zenira previous state
+  }
+
+  if (system_flags.emergency) {
+    // Emergency is active - allow motor control
+    if (motor_on_edge) {
+      // Pilot moved the physical switch: pilot has priority
+      system_flags.motor_on = motor_on_current;
+      system_flags_zenira.motor_on_zenira = motor_on_current;
+
+    } else if (ctrl_bit_zenira) {
+      // No switch movement and zenira is active: zenira controls
+      system_flags.motor_on = system_flags_zenira.motor_on_zenira;
+    }
+    // If ctrl_bit_zenira is not active and no edge, keep current state
+  } else {
+    // Emergency not active: motor must be OFF
+    system_flags.motor_on = 0;
+    system_flags_zenira.motor_on_zenira = 0;
   }
   // END OF MOTOR SWITCH
 
@@ -441,11 +595,13 @@ inline void read_switches(void) {
     if (++count_DMS_state[ON] >= DEAD_MEN_TO_UPDATE) {
       count_DMS_state[OFF] = 0;
       system_flags.dead_men_switch = 1;
+      system_flags_zenira.dead_men_switch_zenira = 1;
     }
   } else {
     if (++count_DMS_state[OFF] >= DEAD_MEN_TO_UPDATE) {
       count_DMS_state[ON] = 0;
       system_flags.dead_men_switch = 0;
+      system_flags_zenira.dead_men_switch_zenira = 0;
     }
   }
   // DEADMAN EXCLUSIVE ON HARDWARE TO MAC
@@ -456,15 +612,21 @@ inline void read_switches(void) {
   // REVERSE SWITCH
   if (!tst_bit(REVERSE_SWITCH_PIN, REVERSE_SWITCH)) {
     system_flags.reverse = 1;
+    system_flags_zenira.reverse_zenira = 1;
   } else {
     system_flags.reverse = 0;
+    system_flags_zenira.reverse_zenira = 0;
   }
   // END OF REVERSE SWITCH
 
-  if (tst_bit(CTRL_SWITCHES_PIN, MCC_ON_SWITCH))
+  if (tst_bit(CTRL_SWITCHES_PIN, MCC_ON_SWITCH)){
     system_flags.MCC_on = 1;
-  else
+    system_flags_zenira.MCC_on_zenira = 1;
+  }
+  else {
     system_flags.MCC_on = 0;
+    system_flags_zenira.MCC_on_zenira = 0;
+  }
 }
 
 /**
@@ -560,13 +722,16 @@ void print_infos(void) {
     usart_send_uint8(system_flags.motor_on);
     usart_send_string(" -|| Rev. flag: ");
     usart_send_uint8(system_flags.reverse);
-    // usart_send_string(" -|| pump1: ");
-    // usart_send_uint8(pump_flags.pump1_on);
+    usart_send_string(" -|| Motor on: ");
+    usart_send_uint8(system_flags.motor_on);
+    usart_send_string(" -|| emergency: ");
+    usart_send_uint8(system_flags.emergency);
     usart_send_string(" -|| zenira_control: ");
     usart_send_uint8(ctrl_bit_zenira);
     usart_send_string(" -|| zenira boat on: ");
     usart_send_uint8(system_flags_zenira.boat_on_zenira);
-    
+    usart_send_string(" -|| zenira motor on: ");
+    usart_send_uint8(system_flags_zenira.motor_on_zenira);  
 
     switch (i++) {
     case 0:

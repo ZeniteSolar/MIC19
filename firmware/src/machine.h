@@ -31,6 +31,9 @@
 #define ERROR_LED_TIME          0.05 // half a period...time that the LED stays on
 #define ERROR_LED_CLK_DIV       ERROR_LED_TIME * 2 * MACHINE_FREQUENCY //  
 
+// Sensitivity thresholds for pilot input detection
+#define MOTOR_PWM_ZENIRA_THRESHOLD 50   // Minimum change to detect pilot input
+#define MDE_STEERING_ZENIRA_THRESHOLD 30 // Minimum change to detect pilot input
 
 #ifdef ADC_ON
 #include "adc.h"
